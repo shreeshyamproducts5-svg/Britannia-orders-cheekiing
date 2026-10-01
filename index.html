@@ -17,7 +17,7 @@
         button:hover { background-color: #f9a825; }
 
         /* Main App */
-        #app-screen, #cart-modal, #preview-modal, #saved-orders-modal { display: none; }
+        #app-screen, #cart-modal, #preview-modal, #saved-orders-modal, #trash-modal { display: none; }
         .search-bar { position: sticky; top: 50px; background: #f5f5f5; padding: 10px 0; z-index: 99; }
         .product-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .product-title { font-size: 16px; font-weight: bold; color: #d32f2f; margin-bottom: 10px; line-height: 1.4; }
@@ -32,6 +32,7 @@
         .btn-view { background-color: #d32f2f; color: white; }
         .btn-saved { background-color: #1976d2; color: white; }
         .btn-clear { background-color: #7f8c8d; color: white; margin-top: 10px; }
+        .btn-trash { background-color: #c0392b; color: white; margin-top: 10px; }
         .btn-group { background-color: #128C7E; color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; }
 
         /* Modals */
@@ -81,7 +82,6 @@
         
         <div class="container">
             <div class="search-bar">
-                <!-- Company Filter -->
                 <select id="company-select" onchange="filterProducts()" style="margin-top: 0;">
                     <option value="All">-- सभी कंपनियाँ (All Companies) --</option>
                     <option value="Britannia" selected>Britannia</option>
@@ -155,14 +155,26 @@
 
             <div id="saved-orders-list"></div>
             
-            <button class="btn-whatsapp" onclick="shareAllOrders('admin')" style="margin-top: 10px;">1. Share Selected to Admin (Direct)</button>
-            <button class="btn-group" onclick="shareAllOrders('group')">2. Share Selected in Group (ग्रुप में भेजें)</button>
-            <button class="btn-clear" onclick="clearAllOrders()">Clear Order History (डिलीट करें)</button>
+            <button class="btn-whatsapp" onclick="shareAllOrders('admin')" style="margin-top: 10px;">1. Share Selected to Admin</button>
+            <button class="btn-group" onclick="shareAllOrders('group')">2. Share Selected in Group</button>
+            <button class="btn-clear" onclick="deleteSelectedOrders()">Delete Selected (ट्रैश में डालें)</button>
+            <button class="btn-trash" onclick="openTrash()">View Trash Bin (डिलीट किए गए ऑर्डर्स)</button>
+        </div>
+    </div>
+
+    <!-- Trash Bin Modal -->
+    <div id="trash-modal" class="modal">
+        <div class="modal-header">
+            <h3 style="margin:0;">Trash (डिलीट किए ऑर्डर्स)</h3>
+            <button class="close-btn" onclick="closeModal('trash-modal')">✖</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#d32f2f; font-size:13px; font-weight:bold; background:#f9e5e5; padding:8px; border-radius:5px;">⚠️ यहाँ मौजूद ऑर्डर्स 30 दिन (1 महीने) बाद अपने आप हमेशा के लिए डिलीट हो जाएंगे।</p>
+            <div id="trash-orders-list"></div>
         </div>
     </div>
 
     <script>
-        // नए प्रोडक्ट्स डालने के लिए बस 'company' का नाम बदलना है।
         var products = [
             { company: "Britannia", name: "BAR CAKE GOBBLES CHOCHO MRP-13.5", pack: "72" },
             { company: "Britannia", name: "BAR CAKE GOBBLES FRUIT MRP-15", pack: "72" },
@@ -233,12 +245,14 @@
             { company: "Britannia", name: "WINKIN SHAKE 180ML[STRAWBERRY]-GST", pack: "30" },
             { company: "Britannia", name: "WINKIN SHAKE 180ML [VANILLA]-GST", pack: "30" },
             
-            // Demo Product for Parle
             { company: "Parle", name: "PARLE-G MRP-10 DEMO", pack: "144" }
         ];
 
         var currentSalesman = "";
         var phoneNo = "917219929217";
+
+        // Auto Clean Trash on Load (30 Days)
+        cleanTrash();
 
         function checkSalesman() {
             var sel = document.getElementById('salesman-select').value;
@@ -300,10 +314,9 @@
                 div.innerHTML = html;
                 list.appendChild(div);
             }
-            filterProducts(); // Ensure the newly rendered items respect the current filter
+            filterProducts(); 
         }
 
-        // New Filter Logic: Matches Both Text and Company Dropdown
         function filterProducts() {
             var text = document.getElementById('search-input').value.toLowerCase();
             var selectedCompany = document.getElementById('company-select').value;
@@ -441,20 +454,6 @@
             renderSavedOrders();
         }
 
-        function clearAllOrders() {
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            if(orders.length === 0) {
-                alert("हिस्ट्री पहले से ही खाली है।");
-                return;
-            }
-            var confirmDelete = confirm("क्या आप सच में सभी ऑर्डर्स डिलीट करना चाहते हैं? ध्यान रहे, यह डेटा वापस नहीं आएगा।");
-            if (confirmDelete) {
-                localStorage.removeItem('savedOrders');
-                renderSavedOrders();
-                alert("हिस्ट्री सफलतापूर्वक डिलीट कर दी गई है!");
-            }
-        }
-
         function renderSavedOrders() {
             var list = document.getElementById('saved-orders-list');
             var filterDate = document.getElementById('order-date-filter').value;
@@ -462,73 +461,170 @@
             
             list.innerHTML = "";
             
-            var filteredOrders = [];
+            var filteredCount = 0;
+            
             for(var k = 0; k < orders.length; k++) {
                 if(!filterDate || orders[k].dateValue === filterDate) {
-                    filteredOrders.push(orders[k]);
+                    filteredCount++;
+                    var o = orders[k];
+                    var html = '<div class="saved-order-card">';
+                    
+                    html += '<label class="order-header-row">';
+                    html += '<span><strong>' + o.party + '</strong> <br><small style="color:gray">' + o.date + '</small></span>';
+                    html += '<input type="checkbox" class="order-cb" data-original-index="' + k + '" checked>';
+                    html += '</label>';
+
+                    html += '<div class="order-details-box">';
+                    
+                    var grandTotal = 0;
+                    for(var i = 0; i < o.items.length; i++) {
+                        var item = o.items[i];
+                        html += '<div style="margin-bottom: 5px;"><b>' + item.name + '</b><br>';
+                        if(item.pq) {
+                            if(item.comp) { html += ' - ' + item.pq + ' Pcs (Company Rate)<br>'; } 
+                            else { var t1 = item.pq * item.pr; grandTotal += t1; html += ' - ' + item.pq + ' Pcs x ₹' + item.pr + ' = ₹' + t1 + '<br>'; }
+                        }
+                        if(item.cq) {
+                            if(item.comp) { html += ' - ' + item.cq + ' Cases (Company Rate)<br>'; } 
+                            else { var t2 = item.cq * item.cr; grandTotal += t2; html += ' - ' + item.cq + ' Cases x ₹' + item.cr + ' = ₹' + t2 + '<br>'; }
+                        }
+                        html += '</div>';
+                    }
+                    
+                    html += '</div>';
+                    if(grandTotal > 0) { html += '<div class="grand-total">Total Bill: ₹' + grandTotal + '</div>'; }
+                    html += '</div>';
+                    list.innerHTML += html;
                 }
             }
 
-            if(filteredOrders.length === 0) { 
+            if(filteredCount === 0) { 
                 list.innerHTML = filterDate ? "इस तारीख का कोई सेव किया हुआ ऑर्डर नहीं है।" : "कोई सेव किया हुआ ऑर्डर नहीं है।"; 
-                return; 
+            }
+        }
+
+        function deleteSelectedOrders() {
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
+            var cbs = document.querySelectorAll('.order-cb');
+            
+            var anyChecked = false;
+            var checkedOriginals = {};
+            
+            for(var c=0; c < cbs.length; c++) {
+                if(cbs[c].checked) {
+                    anyChecked = true;
+                    checkedOriginals[cbs[c].getAttribute('data-original-index')] = true;
+                }
+            }
+
+            if(!anyChecked) {
+                alert("कृपया डिलीट करने के लिए कम से कम एक ऑर्डर बॉक्स पर टिक (✅) लगाएँ!");
+                return;
+            }
+
+            if(!confirm("क्या आप सिलेक्टेड ऑर्डर्स को डिलीट (ट्रैश) करना चाहते हैं? (ये 30 दिन बाद अपने-आप हमेशा के लिए मिट जाएंगे)")) return;
+
+            var newOrders = [];
+            var now = new Date().getTime();
+            
+            for(var k=0; k < orders.length; k++) {
+                if(checkedOriginals[k]) {
+                    var orderToTrash = orders[k];
+                    orderToTrash.deletedAt = now;
+                    trashed.push(orderToTrash);
+                } else {
+                    newOrders.push(orders[k]);
+                }
+            }
+
+            localStorage.setItem('savedOrders', JSON.stringify(newOrders));
+            localStorage.setItem('trashedOrders', JSON.stringify(trashed));
+            
+            renderSavedOrders();
+            alert("सिलेक्टेड ऑर्डर्स ट्रैश बिन में डाल दिए गए हैं!");
+        }
+
+        // Trash Bin Logic (Updated to 30 Days)
+        function cleanTrash() {
+            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
+            var now = new Date().getTime();
+            var thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+            var validTrash = [];
+            
+            for(var i=0; i<trashed.length; i++) {
+                if (now - trashed[i].deletedAt < thirtyDaysMs) {
+                    validTrash.push(trashed[i]);
+                }
+            }
+            localStorage.setItem('trashedOrders', JSON.stringify(validTrash));
+        }
+
+        function openTrash() {
+            cleanTrash();
+            renderTrash();
+            document.getElementById('trash-modal').style.display = 'block';
+        }
+
+        function renderTrash() {
+            var list = document.getElementById('trash-orders-list');
+            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
+            list.innerHTML = "";
+            
+            if(trashed.length === 0) {
+                list.innerHTML = "<p>ट्रैश खाली है।</p>";
+                return;
             }
             
-            for(var oIdx = 0; oIdx < filteredOrders.length; oIdx++) {
-                var o = filteredOrders[oIdx];
-                var html = '<div class="saved-order-card">';
+            for(var i=0; i<trashed.length; i++) {
+                var o = trashed[i];
+                var html = '<div class="saved-order-card" style="opacity:0.8; background:#fafafa;">';
+                html += '<strong>' + o.party + '</strong> <br><small style="color:gray">Saved on: ' + o.date + '</small>';
                 
-                // Add Checkbox here
-                html += '<label class="order-header-row">';
-                html += '<span><strong>' + o.party + '</strong> <br><small style="color:gray">' + o.date + '</small></span>';
-                html += '<input type="checkbox" class="order-cb" data-index="' + oIdx + '" checked>';
-                html += '</label>';
-
-                html += '<div class="order-details-box">';
+                var now = new Date().getTime();
+                var diffMs = (30 * 24 * 60 * 60 * 1000) - (now - o.deletedAt);
+                var daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
                 
-                var grandTotal = 0;
-                for(var i = 0; i < o.items.length; i++) {
-                    var item = o.items[i];
-                    html += '<div style="margin-bottom: 5px;"><b>' + item.name + '</b><br>';
-                    if(item.pq) {
-                        if(item.comp) { html += ' - ' + item.pq + ' Pcs (Company Rate)<br>'; } 
-                        else { var t1 = item.pq * item.pr; grandTotal += t1; html += ' - ' + item.pq + ' Pcs x ₹' + item.pr + ' = ₹' + t1 + '<br>'; }
-                    }
-                    if(item.cq) {
-                        if(item.comp) { html += ' - ' + item.cq + ' Cases (Company Rate)<br>'; } 
-                        else { var t2 = item.cq * item.cr; grandTotal += t2; html += ' - ' + item.cq + ' Cases x ₹' + item.cr + ' = ₹' + t2 + '<br>'; }
-                    }
-                    html += '</div>';
-                }
+                html += '<div style="color:#d32f2f; font-size:12px; margin-top:5px;">🕒 ' + daysLeft + ' दिन में परमानेंट डिलीट हो जाएगा</div>';
                 
-                html += '</div>';
-                if(grandTotal > 0) { html += '<div class="grand-total">Total Bill: ₹' + grandTotal + '</div>'; }
-                html += '</div>';
+                html += '<div style="margin-top:10px; display:flex; gap:10px;">';
+                html += '<button onclick="restoreOrder(' + i + ')" style="padding:6px 12px; font-size:13px; background:#27ae60; color:white; border:none; border-radius:4px; cursor:pointer;">Restore (वापस लाएं)</button>';
+                html += '<button onclick="permanentlyDelete(' + i + ')" style="padding:6px 12px; font-size:13px; background:#555; color:white; border:none; border-radius:4px; cursor:pointer;">Delete (हमेशा के लिए)</button>';
+                html += '</div></div>';
                 list.innerHTML += html;
             }
         }
 
-        // Modified Share function to only share selected orders
-        function shareAllOrders(shareType) {
-            var filterDate = document.getElementById('order-date-filter').value;
+        function restoreOrder(idx) {
+            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
             var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            
-            var filteredOrders = [];
-            for(var k = 0; k < orders.length; k++) {
-                if(!filterDate || orders[k].dateValue === filterDate) {
-                    filteredOrders.push(orders[k]);
-                }
-            }
+            var o = trashed.splice(idx, 1)[0];
+            delete o.deletedAt; 
+            orders.push(o);
+            localStorage.setItem('trashedOrders', JSON.stringify(trashed));
+            localStorage.setItem('savedOrders', JSON.stringify(orders));
+            renderTrash();
+            renderSavedOrders();
+            alert("ऑर्डर वापस Saved Orders में डाल दिया गया है!");
+        }
 
-            if(filteredOrders.length === 0) { alert("शेयर करने के लिए कोई ऑर्डर नहीं है!"); return; }
+        function permanentlyDelete(idx) {
+            if(!confirm("क्या आप इसे हमेशा के लिए मिटाना चाहते हैं?")) return;
+            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
+            trashed.splice(idx, 1);
+            localStorage.setItem('trashedOrders', JSON.stringify(trashed));
+            renderTrash();
+        }
 
-            // Find selected orders via checkboxes
-            var finalOrdersToShare = [];
+        function shareAllOrders(shareType) {
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
             var cbs = document.querySelectorAll('.order-cb');
+            
+            var finalOrdersToShare = [];
             for(var c=0; c < cbs.length; c++) {
                 if(cbs[c].checked) {
-                    var idx = parseInt(cbs[c].getAttribute('data-index'));
-                    finalOrdersToShare.push(filteredOrders[idx]);
+                    var origIdx = cbs[c].getAttribute('data-original-index');
+                    finalOrdersToShare.push(orders[origIdx]);
                 }
             }
 
@@ -538,6 +634,7 @@
             }
 
             var msg = "*ORDERS (" + finalOrdersToShare.length + ")*\n*Salesman:* " + currentSalesman + "\n";
+            var filterDate = document.getElementById('order-date-filter').value;
             if (filterDate) {
                 var parts = filterDate.split('-');
                 if(parts.length === 3) {

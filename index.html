@@ -20,8 +20,9 @@
         #app-screen, #cart-modal, #preview-modal, #saved-orders-modal { display: none; }
         .search-bar { position: sticky; top: 50px; background: #f5f5f5; padding: 10px 0; z-index: 99; }
         .product-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .product-title { font-size: 15px; font-weight: bold; color: #d32f2f; margin-bottom: 10px; }
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .product-title { font-size: 16px; font-weight: bold; color: #d32f2f; margin-bottom: 10px; line-height: 1.4; }
+        .packing-info { font-size: 13px; color: #555; font-weight: normal; background: #e0e0e0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .input-group label { font-size: 12px; color: #555; }
         .item-total { color: red; font-weight: bold; margin-top: 10px; text-align: right; }
         .company-rate-box { margin-top: 10px; font-size: 14px; }
@@ -152,74 +153,74 @@
 
     <script>
         var products = [
-            "BAR CAKE GOBBLES CHOCHO MRP-13.5",
-            "BAR CAKE GOBBLES FRUIT MRP-15",
-            "BAR CAKE GOBBLES FRUIT MRP-27",
-            "BAR CAKE GOLBBLES CHOCHO MRP-27",
-            "BOURBON MRP-30",
-            "BOURBON MRP-40-GST",
-            "BRITANNIA GHEE 1LTR",
-            "BROWNIE NON VEG MRP-20",
-            "FIFTY-FIFTY CHEEZE DIPPED MRP-50",
-            "FIFTY-FIFTY MRP-10 GST (MARGIN 11.8)",
-            "FIFTY-FIFTY MRP-10[GOLMAAL-BUTTER] GST MARGIN-9.8",
-            "FIFTY-FIFTY MRP-10[GOLMAAL] GST (MARGIN 11.8)",
-            "FIFTY-FIFTY MRP-5-GST",
-            "GOODAY MRP-10[BUTTER]-PACK CASE",
-            "GOODAY MRP-10[CASHEW] GST (MARGIN 9.45)",
-            "GOODAY MRP-150[CASHEW]",
-            "GOODAY MRP-20[FRUIT & NUT] GST MARGIN-11.8",
-            "GOODAY MRP-40[BUTTER]-GST (MARGIN-9.8)",
-            "GOODAY MRP-45[CASHEW] GST-( MARGIN-9.45)",
-            "GOODAY MRP-55[PISTA]",
-            "GOODAY MRP-5[BUTTER] PACK CASE",
-            "GOODAY MRP-140[PISTA] GST (MARGIN 9.9)",
-            "LAYER CAKE 12GM[ VEG] -ORANGE GST (MARGIN 18.72)",
-            "LAYER CAKE 12GM[ VEG] GST (MARGIN 18.72)",
-            "MARIGOLD MRP-10GST-",
-            "MARIGOLD MRP-45GST-",
-            "MILKBIKIS MRP-10 GST MARGIN-11.8",
-            "MILKBIKIS MRP-30",
-            "MILKBIKIS MRP-35GST-",
-            "MILKBIKIS MRP-5 GST (MARGIN 11.65)",
-            "NICE TIME MRP-25 GST(MARGIN-9.8)",
-            "NUTRI CHOICE MRP-10",
-            "NUTRI CHOICE MRP-25 GST (MARGIN-11.8)",
-            "PURE MAGIC MRP-30 GST MARGIN11.8-",
-            "RUSK MRP-10 GST MARGIN-19.8",
-            "RUSK MRP-50 GST MARGIN-15",
-            "SWISS ROLL TRIPLE CHOCHO MRP-9",
-            "TCW LD CHEESE 28.7+2.8G",
-            "TCW LD CHOCHO MRP-05",
-            "TIGER COCONUT MRP-10 GST MARGIN-11.8",
-            "TIGER GLUCOSE MRP-10 GST(MARGIN 9.8)",
-            "TIGER GLUCOSE MRP-5 GST (MARGIN 9.9)",
-            "TIGER KREEMZ MRP-5[CHOCHO-MILK] GST (MARGIN 11.65)",
-            "TIGER KREEMZ MRP-5[CHOCHO] GST (MARGIN 11.65)",
-            "TIGER KREEMZ MRP-5[ELAICHI]-GST",
-            "TIGER KREEMZ MRP-5[ORANGE] GST (MARGIN 11.65)",
-            "TIGER KRUNCH MRP-10 GST MARGIN-11.8",
-            "TIGER KRUNCH MRP -5 GST (MARGIN 11.65)",
-            "TREAT CRM MRP-100[ORANGE]-GST",
-            "TREAT CRM MRP-10[JIMJAM]",
-            "TREAT CRM MRP-10[ORANGE]-GST",
-            "TREAT CRM MRP-10[VANILLA]-GST",
-            "TREAT CRM[CHOCHO] MRP-10",
-            "TREAT CRM[JIMJAM] MRP-10 PACK CASE",
-            "TREAT CROISSANT MIXED FRUIT",
-            "TREAT WAFERS LD CHEESE 10.2",
-            "TREAT WAFERS LD CHOCO 10.2G",
-            "TREAT WLD CHOCO 28.7+1.8G",
-            "VEG BROWNIE 40GM",
-            "VEG CAKE MRP-10[CHOCOLATE]-GST",
-            "VEG CAKE MRP-10[FRUIT]-GST",
-            "VEG CAKE MRP-25[CHOCOLATE] GST (MARGIN 11.8)",
-            "VEG CAKE MRP-25[FRUIT] GST MARGIN-11.8",
-            "WINKIN 180ML [COLD-COFFEE]-GST",
-            "WINKIN LASSI 180ML [CLASSIC]-GST",
-            "WINKIN SHAKE 180ML [CHOCHOJ-GST",
-            "WINKIN SHAKE 180ML[STRAWBERRY]-GST",
-            "WINKIN SHAKE 180ML [VANILLA]-GST"
+            { name: "BAR CAKE GOBBLES CHOCHO MRP-13.5", pack: "72" },
+            { name: "BAR CAKE GOBBLES FRUIT MRP-15", pack: "72" },
+            { name: "BAR CAKE GOBBLES FRUIT MRP-27", pack: "40" },
+            { name: "BAR CAKE GOLBBLES CHOCHO MRP-27", pack: "40" },
+            { name: "BOURBON MRP-30", pack: "80" },
+            { name: "BOURBON MRP-40-GST", pack: "48" },
+            { name: "BRITANNIA GHEE 1LTR", pack: "18" },
+            { name: "BROWNIE NON VEG MRP-20", pack: "90" },
+            { name: "FIFTY-FIFTY CHEEZE DIPPED MRP-50", pack: "60" },
+            { name: "FIFTY-FIFTY MRP-10 GST (MARGIN 11.8)", pack: "108" },
+            { name: "FIFTY-FIFTY MRP-10[GOLMAAL-BUTTER] GST MARGIN-9.8", pack: "100" },
+            { name: "FIFTY-FIFTY MRP-10[GOLMAAL] GST (MARGIN 11.8)", pack: "72" },
+            { name: "FIFTY-FIFTY MRP-5-GST", pack: "144" },
+            { name: "GOODAY MRP-10[BUTTER]-PACK CASE", pack: "1" },
+            { name: "GOODAY MRP-10[CASHEW] GST (MARGIN 9.45)", pack: "84" },
+            { name: "GOODAY MRP-150[CASHEW]", pack: "10" },
+            { name: "GOODAY MRP-20[FRUIT & NUT] GST MARGIN-11.8", pack: "60" },
+            { name: "GOODAY MRP-40[BUTTER]-GST (MARGIN-9.8)", pack: "20" },
+            { name: "GOODAY MRP-45[CASHEW] GST-( MARGIN-9.45)", pack: "20" },
+            { name: "GOODAY MRP-55[PISTA]", pack: "48" },
+            { name: "GOODAY MRP-5[BUTTER] PACK CASE", pack: "1" },
+            { name: "GOODAY MRP-140[PISTA] GST (MARGIN 9.9)", pack: "10" },
+            { name: "LAYER CAKE 12GM[ VEG] -ORANGE GST (MARGIN 18.72)", pack: "320" },
+            { name: "LAYER CAKE 12GM[ VEG] GST (MARGIN 18.72)", pack: "424" },
+            { name: "MARIGOLD MRP-10GST-", pack: "96" },
+            { name: "MARIGOLD MRP-45GST-", pack: "36" },
+            { name: "MILKBIKIS MRP-10 GST MARGIN-11.8", pack: "96" },
+            { name: "MILKBIKIS MRP-30", pack: "42" },
+            { name: "MILKBIKIS MRP-35GST-", pack: "32" },
+            { name: "MILKBIKIS MRP-5 GST (MARGIN 11.65)", pack: "168" },
+            { name: "NICE TIME MRP-25 GST(MARGIN-9.8)", pack: "40" },
+            { name: "NUTRI CHOICE MRP-10", pack: "72" },
+            { name: "NUTRI CHOICE MRP-25 GST (MARGIN-11.8)", pack: "72" },
+            { name: "PURE MAGIC MRP-30 GST MARGIN11.8-", pack: "60" },
+            { name: "RUSK MRP-10 GST MARGIN-19.8", pack: "36" },
+            { name: "RUSK MRP-50 GST MARGIN-15", pack: "32" },
+            { name: "SWISS ROLL TRIPLE CHOCHO MRP-9", pack: "240" },
+            { name: "TCW LD CHEESE 28.7+2.8G", pack: "144" },
+            { name: "TCW LD CHOCHO MRP-05", pack: "320" },
+            { name: "TIGER COCONUT MRP-10 GST MARGIN-11.8", pack: "120" },
+            { name: "TIGER GLUCOSE MRP-10 GST(MARGIN 9.8)", pack: "60" },
+            { name: "TIGER GLUCOSE MRP-5 GST (MARGIN 9.9)", pack: "144" },
+            { name: "TIGER KREEMZ MRP-5[CHOCHO-MILK] GST (MARGIN 11.65)", pack: "144" },
+            { name: "TIGER KREEMZ MRP-5[CHOCHO] GST (MARGIN 11.65)", pack: "144" },
+            { name: "TIGER KREEMZ MRP-5[ELAICHI]-GST", pack: "144" },
+            { name: "TIGER KREEMZ MRP-5[ORANGE] GST (MARGIN 11.65)", pack: "144" },
+            { name: "TIGER KRUNCH MRP-10 GST MARGIN-11.8", pack: "108" },
+            { name: "TIGER KRUNCH MRP -5 GST (MARGIN 11.65)", pack: "216" },
+            { name: "TREAT CRM MRP-100[ORANGE]-GST", pack: "20" },
+            { name: "TREAT CRM MRP-10[JIMJAM]", pack: "120" },
+            { name: "TREAT CRM MRP-10[ORANGE]-GST", pack: "80" },
+            { name: "TREAT CRM MRP-10[VANILLA]-GST", pack: "80" },
+            { name: "TREAT CRM[CHOCHO] MRP-10", pack: "80" },
+            { name: "TREAT CRM[JIMJAM] MRP-10 PACK CASE", pack: "1" },
+            { name: "TREAT CROISSANT MIXED FRUIT", pack: "20" },
+            { name: "TREAT WAFERS LD CHEESE 10.2", pack: "320" },
+            { name: "TREAT WAFERS LD CHOCO 10.2G", pack: "320" },
+            { name: "TREAT WLD CHOCO 28.7+1.8G", pack: "144" },
+            { name: "VEG BROWNIE 40GM", pack: "90" },
+            { name: "VEG CAKE MRP-10[CHOCOLATE]-GST", pack: "72" },
+            { name: "VEG CAKE MRP-10[FRUIT]-GST", pack: "72" },
+            { name: "VEG CAKE MRP-25[CHOCOLATE] GST (MARGIN 11.8)", pack: "60" },
+            { name: "VEG CAKE MRP-25[FRUIT] GST MARGIN-11.8", pack: "60" },
+            { name: "WINKIN 180ML [COLD-COFFEE]-GST", pack: "30" },
+            { name: "WINKIN LASSI 180ML [CLASSIC]-GST", pack: "30" },
+            { name: "WINKIN SHAKE 180ML [CHOCHOJ-GST", pack: "30" },
+            { name: "WINKIN SHAKE 180ML[STRAWBERRY]-GST", pack: "30" },
+            { name: "WINKIN SHAKE 180ML [VANILLA]-GST", pack: "30" }
         ];
 
         var currentSalesman = "";
@@ -269,9 +270,9 @@
                 var prod = products[i];
                 var div = document.createElement('div');
                 div.className = 'product-card';
-                div.setAttribute('data-name', prod.toLowerCase());
+                div.setAttribute('data-name', prod.name.toLowerCase());
                 
-                var html = '<div class="product-title">' + prod + '</div>' +
+                var html = '<div class="product-title">' + prod.name + '<br><span class="packing-info">📦 पैकिंग: ' + prod.pack + ' पीस / केस</span></div>' +
                            '<div class="input-grid">' +
                                '<div class="input-group"><label>Pieces (पीस)</label><input type="number" id="p-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div>' +
                                '<div class="input-group"><label>Rate / Piece</label><input type="number" id="p-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div>' +
@@ -337,7 +338,7 @@
                 var comp = document.getElementById('comp-rate-' + i).checked;
                 
                 if (pq || cq) {
-                    items.push({ name: prod, pq: pq, pr: pr, cq: cq, cr: cr, comp: comp });
+                    items.push({ name: prod.name, pq: pq, pr: pr, cq: cq, cr: cr, comp: comp });
                 }
             }
             return items;

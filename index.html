@@ -70,7 +70,7 @@
             </select>
             <input type="text" id="other-salesman" placeholder="सेल्समैन का नाम लिखें..." style="display: none;">
             <button onclick="startApp()">Start Order Collection</button>
-            <div id="loading-msg" style="color: green; margin-top: 15px; font-size: 14px;">स्टॉक लिस्ट लोड हो रही है...</div>
+            <div id="loading-msg" style="color: blue; margin-top: 15px; font-size: 14px; font-weight: bold;">स्टॉक लिस्ट लोड हो रही है...</div>
         </div>
     </div>
 
@@ -182,13 +182,21 @@
         };
 
         function fetchCSVData() {
-            fetch('stock.csv')
+            // "v=" + new Date().getTime() forces the browser to get the NEWEST file, ignoring cache.
+            var url = 'stock.csv?v=' + new Date().getTime();
+            
+            fetch(url)
                 .then(response => {
-                    if (!response.ok) throw new Error("stock.csv फाइल नहीं मिली। कृपया GitHub पर अपलोड करें।");
+                    if (!response.ok) throw new Error("stock.csv फाइल नहीं मिली।");
                     return response.text();
                 })
                 .then(csvText => {
+                    // Check if GitHub returned an HTML error page instead of a CSV
+                    if(csvText.toLowerCase().indexOf("<!doctype html>") !== -1) {
+                         throw new Error("फाइल अभी तक GitHub पर लाइव नहीं हुई है। कृपया 2 मिनट रुकें।");
+                    }
                     parseCSV(csvText);
+                    document.getElementById('loading-msg').style.color = "green";
                     document.getElementById('loading-msg').innerText = "✅ स्टॉक अपडेट हो गया (" + products.length + " आइटम्स)";
                 })
                 .catch(error => {
@@ -198,26 +206,46 @@
         }
 
         function parseCSV(text) {
-            var lines = text.split('\n');
+            // Handles different types of line breaks (Windows/Mac/Linux)
+            var lines = text.split(/\r?\n/);
             products = [];
             var companiesSet = {};
             
-            // Assuming first line is header, so start from i=1
+            // Smart Delimiter Detector (Checks if file uses commas, tabs or semicolons)
+            var headerLine = lines[0] || "";
+            var delimiter = ',';
+            if (headerLine.indexOf('\t') !== -1) delimiter = '\t';
+            else if (headerLine.indexOf(';') !== -1) delimiter = ';';
+            
             for (var i = 1; i < lines.length; i++) {
                 var line = lines[i].trim();
                 if (!line) continue;
                 
-                // Splitting CSV correctly handling commas inside strings
-                var cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                var cols;
+                if(delimiter === ',') {
+                    // Safe split for commas that ignores commas inside quotes
+                    cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                } else {
+                    cols = line.split(delimiter);
+                }
                 
-                if (cols.length >= 6) {
-                    var desc = cols[0].replace(/^"|"$/g, '').trim();
-                    var pack = cols[1].replace(/^"|"$/g, '').trim();
-                    var comp = cols[2].replace(/^"|"$/g, '').trim();
-                    var sRate = cols[5].replace(/^"|"$/g, '').trim();
+                // If the line has at least the item name
+                if (cols.length >= 2) {
+                    var desc = cols[0] ? cols[0].replace(/^"|"$/g, '').trim() : "";
+                    var pack = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : "1";
+                    var comp = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "Company";
                     
-                    products.push({ name: desc, pack: pack, company: comp, saleRate: sRate });
-                    companiesSet[comp] = true;
+                    // Safely get Sale Rate from Column F (index 5) if it exists
+                    var sRate = "0";
+                    if(cols.length > 5 && cols[5]) {
+                        sRate = cols[5].replace(/^"|"$/g, '').trim();
+                    }
+                    
+                    // Don't add if it's accidentally picking up another header row
+                    if(desc && desc.toLowerCase() !== "description") {
+                        products.push({ name: desc, pack: pack, company: comp, saleRate: sRate });
+                        companiesSet[comp] = true;
+                    }
                 }
             }
             populateCompanyDropdown(companiesSet);
@@ -245,7 +273,7 @@
         function startApp() {
             try {
                 if (products.length === 0) {
-                    alert("स्टॉक लिस्ट लोड नहीं हुई है। कृपया पहले stock.csv अपलोड करें या इंटरनेट चेक करें।");
+                    alert("स्टॉक लिस्ट लोड नहीं हुई है। कृपया स्क्रीन पर दिखा रहा हरा/लाल मैसेज चेक करें।");
                     return;
                 }
                 
@@ -285,8 +313,9 @@
                 div.setAttribute('data-name', prod.name.toLowerCase());
                 div.setAttribute('data-company', prod.company);
                 
-                // New display with S.R.
-                var packInfo = '📦 ' + prod.pack + ' | S.R.: ' + parseFloat(prod.saleRate).toFixed(2);
+                var sRateNum = parseFloat(prod.saleRate);
+                var displayRate = isNaN(sRateNum) ? prod.saleRate : sRateNum.toFixed(2);
+                var packInfo = '📦 ' + prod.pack + ' | S.R.: ' + displayRate;
                 
                 var html = '<div class="product-title">' + prod.name + '<br><span class="packing-info">' + packInfo + '</span></div>' +
                            '<div class="input-grid">' +

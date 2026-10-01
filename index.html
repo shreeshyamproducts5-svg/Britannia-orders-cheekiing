@@ -20,7 +20,7 @@
         #app-screen, #cart-modal, #preview-modal, #saved-orders-modal { display: none; }
         .search-bar { position: sticky; top: 50px; background: #f5f5f5; padding: 10px 0; z-index: 99; }
         .product-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .product-title { font-size: 18px; font-weight: bold; color: #d32f2f; margin-bottom: 10px; }
+        .product-title { font-size: 15px; font-weight: bold; color: #d32f2f; margin-bottom: 10px; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-group label { font-size: 12px; color: #555; }
         .item-total { color: red; font-weight: bold; margin-top: 10px; text-align: right; }
@@ -38,10 +38,10 @@
         .modal-header { background: #d32f2f; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
         .close-btn { background: none; border: none; color: white; font-size: 20px; width: auto; padding: 0; }
         .modal-body { padding: 15px; }
-        .preview-box { border: 1px solid #ccc; background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-family: monospace; white-space: pre-wrap; }
+        .preview-box { border: 1px solid #ccc; background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-family: monospace; white-space: pre-wrap; font-size: 13px; }
         .btn-whatsapp { background-color: #25D366; color: white; }
         .saved-order-card { border: 1px solid #ccc; padding: 12px; margin-bottom: 15px; border-radius: 5px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .order-details-box { background: #f9f9f9; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 14px; }
+        .order-details-box { background: #f9f9f9; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 13px; }
         .grand-total { color: #d32f2f; font-size: 16px; font-weight: bold; margin-top: 10px; text-align: right; border-top: 1px solid #ddd; padding-top: 5px;}
         
         .filter-section { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
@@ -136,7 +136,6 @@
         </div>
         <div class="modal-body">
             
-            <!-- Date Filter Section -->
             <div class="filter-section">
                 <label style="font-size:14px; font-weight:bold; white-space:nowrap;">Date Filter:</label>
                 <input type="date" id="order-date-filter" onchange="renderSavedOrders()" style="margin:0; padding:8px;">
@@ -153,15 +152,74 @@
 
     <script>
         var products = [
-            "Good day 10/-", "Good day kaju 10/-", "Good day 5/-", "Good day kaju 5/-", 
-            "Good day jeera 20/-", "Good day batter 35/-", "Good day kaju 40/-", "Good day pista 50/-",
-            "Mari gold 10/-", "Mari gold 45/-", "Nice time 10/-", "Nice time 25/-",
-            "Nurti choice 10/-", "Nurti choice 25/-", "50-50 time pass 10/-", "50-50 salat green 10/-",
-            "50-50 gol mal 10/-", "50 -50 gol mal batter 10/-", "50-50 golmal 5/-",
-            "Tiger kreemz 10/-", "Tiger kraunch 10/-", "Tiger cream elchi 5/-", "Tiger cream Orange 5/-",
-            "Tiger cream choco 5/-", "Tiger cream choco milk 5/-", "Pure magic 30/-",
-            "Cake choco 25 /-", "Cake fuirt 25/-", "Cake jar 5/-", "Borburn 10/-",
-            "Borburn 30/-", "Tiger coconut 10/-", "Rusk 10/-", "Rusk 50/-"
+            "BAR CAKE GOBBLES CHOCHO MRP-13.5",
+            "BAR CAKE GOBBLES FRUIT MRP-15",
+            "BAR CAKE GOBBLES FRUIT MRP-27",
+            "BAR CAKE GOLBBLES CHOCHO MRP-27",
+            "BOURBON MRP-30",
+            "BOURBON MRP-40-GST",
+            "BRITANNIA GHEE 1LTR",
+            "BROWNIE NON VEG MRP-20",
+            "FIFTY-FIFTY CHEEZE DIPPED MRP-50",
+            "FIFTY-FIFTY MRP-10 GST (MARGIN 11.8)",
+            "FIFTY-FIFTY MRP-10[GOLMAAL-BUTTER] GST MARGIN-9.8",
+            "FIFTY-FIFTY MRP-10[GOLMAAL] GST (MARGIN 11.8)",
+            "FIFTY-FIFTY MRP-5-GST",
+            "GOODAY MRP-10[BUTTER]-PACK CASE",
+            "GOODAY MRP-10[CASHEW] GST (MARGIN 9.45)",
+            "GOODAY MRP-150[CASHEW]",
+            "GOODAY MRP-20[FRUIT & NUT] GST MARGIN-11.8",
+            "GOODAY MRP-40[BUTTER]-GST (MARGIN-9.8)",
+            "GOODAY MRP-45[CASHEW] GST-( MARGIN-9.45)",
+            "GOODAY MRP-55[PISTA]",
+            "GOODAY MRP-5[BUTTER] PACK CASE",
+            "GOODAY MRP-140[PISTA] GST (MARGIN 9.9)",
+            "LAYER CAKE 12GM[ VEG] -ORANGE GST (MARGIN 18.72)",
+            "LAYER CAKE 12GM[ VEG] GST (MARGIN 18.72)",
+            "MARIGOLD MRP-10GST-",
+            "MARIGOLD MRP-45GST-",
+            "MILKBIKIS MRP-10 GST MARGIN-11.8",
+            "MILKBIKIS MRP-30",
+            "MILKBIKIS MRP-35GST-",
+            "MILKBIKIS MRP-5 GST (MARGIN 11.65)",
+            "NICE TIME MRP-25 GST(MARGIN-9.8)",
+            "NUTRI CHOICE MRP-10",
+            "NUTRI CHOICE MRP-25 GST (MARGIN-11.8)",
+            "PURE MAGIC MRP-30 GST MARGIN11.8-",
+            "RUSK MRP-10 GST MARGIN-19.8",
+            "RUSK MRP-50 GST MARGIN-15",
+            "SWISS ROLL TRIPLE CHOCHO MRP-9",
+            "TCW LD CHEESE 28.7+2.8G",
+            "TCW LD CHOCHO MRP-05",
+            "TIGER COCONUT MRP-10 GST MARGIN-11.8",
+            "TIGER GLUCOSE MRP-10 GST(MARGIN 9.8)",
+            "TIGER GLUCOSE MRP-5 GST (MARGIN 9.9)",
+            "TIGER KREEMZ MRP-5[CHOCHO-MILK] GST (MARGIN 11.65)",
+            "TIGER KREEMZ MRP-5[CHOCHO] GST (MARGIN 11.65)",
+            "TIGER KREEMZ MRP-5[ELAICHI]-GST",
+            "TIGER KREEMZ MRP-5[ORANGE] GST (MARGIN 11.65)",
+            "TIGER KRUNCH MRP-10 GST MARGIN-11.8",
+            "TIGER KRUNCH MRP -5 GST (MARGIN 11.65)",
+            "TREAT CRM MRP-100[ORANGE]-GST",
+            "TREAT CRM MRP-10[JIMJAM]",
+            "TREAT CRM MRP-10[ORANGE]-GST",
+            "TREAT CRM MRP-10[VANILLA]-GST",
+            "TREAT CRM[CHOCHO] MRP-10",
+            "TREAT CRM[JIMJAM] MRP-10 PACK CASE",
+            "TREAT CROISSANT MIXED FRUIT",
+            "TREAT WAFERS LD CHEESE 10.2",
+            "TREAT WAFERS LD CHOCO 10.2G",
+            "TREAT WLD CHOCO 28.7+1.8G",
+            "VEG BROWNIE 40GM",
+            "VEG CAKE MRP-10[CHOCOLATE]-GST",
+            "VEG CAKE MRP-10[FRUIT]-GST",
+            "VEG CAKE MRP-25[CHOCOLATE] GST (MARGIN 11.8)",
+            "VEG CAKE MRP-25[FRUIT] GST MARGIN-11.8",
+            "WINKIN 180ML [COLD-COFFEE]-GST",
+            "WINKIN LASSI 180ML [CLASSIC]-GST",
+            "WINKIN SHAKE 180ML [CHOCHOJ-GST",
+            "WINKIN SHAKE 180ML[STRAWBERRY]-GST",
+            "WINKIN SHAKE 180ML [VANILLA]-GST"
         ];
 
         var currentSalesman = "";

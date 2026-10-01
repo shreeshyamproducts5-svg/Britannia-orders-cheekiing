@@ -20,8 +20,10 @@
         #app-screen, #cart-modal, #preview-modal, #saved-orders-modal, #trash-modal { display: none; }
         .search-bar { position: sticky; top: 50px; background: #f5f5f5; padding: 10px 0; z-index: 99; }
         .product-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .product-title { font-size: 16px; font-weight: bold; color: #d32f2f; margin-bottom: 10px; line-height: 1.4; }
-        .packing-info { font-size: 13px; color: #555; font-weight: bold; background: #e0e0e0; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+        .product-title { font-size: 16px; font-weight: bold; color: #d32f2f; margin-bottom: 5px; line-height: 1.4; }
+        .packing-info { font-size: 13px; color: #333; font-weight: bold; background: #e0e0e0; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; line-height: 1.8; }
+        .stock-good { color: #1e824c; font-weight: bold; }
+        .stock-bad { color: #d32f2f; font-weight: bold; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .input-group label { font-size: 12px; color: #555; }
         .item-total { color: red; font-weight: bold; margin-top: 10px; text-align: right; }
@@ -182,16 +184,13 @@
         };
 
         function fetchCSVData() {
-            // "v=" + new Date().getTime() forces the browser to get the NEWEST file, ignoring cache.
             var url = 'stock.csv?v=' + new Date().getTime();
-            
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error("stock.csv फाइल नहीं मिली।");
                     return response.text();
                 })
                 .then(csvText => {
-                    // Check if GitHub returned an HTML error page instead of a CSV
                     if(csvText.toLowerCase().indexOf("<!doctype html>") !== -1) {
                          throw new Error("फाइल अभी तक GitHub पर लाइव नहीं हुई है। कृपया 2 मिनट रुकें।");
                     }
@@ -206,12 +205,10 @@
         }
 
         function parseCSV(text) {
-            // Handles different types of line breaks (Windows/Mac/Linux)
             var lines = text.split(/\r?\n/);
             products = [];
             var companiesSet = {};
             
-            // Smart Delimiter Detector (Checks if file uses commas, tabs or semicolons)
             var headerLine = lines[0] || "";
             var delimiter = ',';
             if (headerLine.indexOf('\t') !== -1) delimiter = '\t';
@@ -223,27 +220,30 @@
                 
                 var cols;
                 if(delimiter === ',') {
-                    // Safe split for commas that ignores commas inside quotes
                     cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 } else {
                     cols = line.split(delimiter);
                 }
                 
-                // If the line has at least the item name
                 if (cols.length >= 2) {
                     var desc = cols[0] ? cols[0].replace(/^"|"$/g, '').trim() : "";
                     var pack = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : "1";
                     var comp = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "Company";
                     
-                    // Safely get Sale Rate from Column F (index 5) if it exists
+                    // Column D (Index 3) for Stock extraction
+                    var stockNum = 0;
+                    if(cols.length > 3 && cols[3]) {
+                        stockNum = parseFloat(cols[3].replace(/[^0-9.-]/g, '')) || 0;
+                    }
+
+                    // Column F (Index 5) for Sale Rate extraction
                     var sRate = "0";
                     if(cols.length > 5 && cols[5]) {
                         sRate = cols[5].replace(/^"|"$/g, '').trim();
                     }
                     
-                    // Don't add if it's accidentally picking up another header row
                     if(desc && desc.toLowerCase() !== "description") {
-                        products.push({ name: desc, pack: pack, company: comp, saleRate: sRate });
+                        products.push({ name: desc, pack: pack, company: comp, saleRate: sRate, currentStock: stockNum });
                         companiesSet[comp] = true;
                     }
                 }
@@ -315,7 +315,16 @@
                 
                 var sRateNum = parseFloat(prod.saleRate);
                 var displayRate = isNaN(sRateNum) ? prod.saleRate : sRateNum.toFixed(2);
-                var packInfo = '📦 ' + prod.pack + ' | S.R.: ' + displayRate;
+                
+                // Dynamic Stock Display
+                var stockStatus = "";
+                if(prod.currentStock > 0) {
+                    stockStatus = '<span class="stock-good">🟢 स्टॉक: ' + prod.currentStock + ' पीस</span>';
+                } else {
+                    stockStatus = '<span class="stock-bad">🔴 स्टॉक: 0 (Out of Stock)</span>';
+                }
+
+                var packInfo = '📦 ' + prod.pack + ' | S.R.: ' + displayRate + '<br>' + stockStatus;
                 
                 var html = '<div class="product-title">' + prod.name + '<br><span class="packing-info">' + packInfo + '</span></div>' +
                            '<div class="input-grid">' +
@@ -353,12 +362,26 @@
             }
         }
 
+        // Live Stock Validation Logic
         function calcTotal(i) {
             if(document.getElementById('comp-rate-' + i).checked) return;
             var pq = parseFloat(document.getElementById('p-qty-' + i).value) || 0;
             var pr = parseFloat(document.getElementById('p-rate-' + i).value) || 0;
             var cq = parseFloat(document.getElementById('c-qty-' + i).value) || 0;
             var cr = parseFloat(document.getElementById('c-rate-' + i).value) || 0;
+            
+            var packSize = parseInt(products[i].pack) || 1;
+            var reqPieces = pq + (cq * packSize);
+            var available = products[i].currentStock;
+
+            // Restrict from over-booking stock
+            if(reqPieces > available) {
+                alert("⚠️ स्टॉक खत्म! आपके पास केवल " + available + " पीस बचे हैं।");
+                document.getElementById('p-qty-' + i).value = "";
+                document.getElementById('c-qty-' + i).value = "";
+                pq = 0; cq = 0;
+            }
+
             var total = (pq * pr) + (cq * cr);
             document.getElementById('total-' + i).innerText = "Total: ₹" + total;
         }
@@ -439,6 +462,17 @@
             if(!partyName || partyName.trim() === "") { alert("पार्टी का नाम डालें!"); return; }
             var items = getCartData();
             if(items.length === 0) { alert("ऑर्डर खाली है!"); return; }
+
+            // Deduct stock in memory for subsequent orders
+            for(var j = 0; j < items.length; j++) {
+                var prodIndex = products.findIndex(p => p.name === items[j].name);
+                if(prodIndex !== -1) {
+                     var packSize = parseInt(products[prodIndex].pack) || 1;
+                     var reqP = parseFloat(items[j].pq) || 0;
+                     var reqC = parseFloat(items[j].cq) || 0;
+                     products[prodIndex].currentStock -= (reqP + (reqC * packSize));
+                }
+            }
 
             var today = new Date();
             var yyyy = today.getFullYear();

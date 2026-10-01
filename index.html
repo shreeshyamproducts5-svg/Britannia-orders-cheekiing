@@ -144,7 +144,7 @@
     </div>
 
     <script>
-        const products = [
+        var products = [
             "Good day 10/-", "Good day kaju 10/-", "Good day 5/-", "Good day kaju 5/-", 
             "Good day jeera 20/-", "Good day batter 35/-", "Good day kaju 40/-", "Good day pista 50/-",
             "Mari gold 10/-", "Mari gold 45/-", "Nice time 10/-", "Nice time 25/-",
@@ -156,105 +156,94 @@
             "Borburn 30/-", "Tiger coconut 10/-", "Rusk 10/-", "Rusk 50/-"
         ];
 
-        let currentSalesman = "";
-        let phoneNo = "917219929217";
+        var currentSalesman = "";
+        var phoneNo = "917219929217";
 
-        // Login Logic
         function checkSalesman() {
-            const sel = document.getElementById('salesman-select').value;
+            var sel = document.getElementById('salesman-select').value;
             document.getElementById('other-salesman').style.display = (sel === "Company Salesman") ? "block" : "none";
         }
 
         function startApp() {
-            const sel = document.getElementById('salesman-select').value;
-            if (sel === "") { alert("कृपया पहले सेल्समैन का नाम चुनें!"); return; }
-            if (sel === "Company Salesman") {
-                const other = document.getElementById('other-salesman').value.trim();
-                if (other === "") { alert("कृपया सेल्समैन का नाम लिखें!"); return; }
-                currentSalesman = other;
-            } else {
-                currentSalesman = sel;
-            }
-            
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'block';
-            document.getElementById('active-salesman').innerText = "सेल्समैन: " + currentSalesman;
-            
-            // Safe Date Generation
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            let mm = today.getMonth() + 1;
-            let dd = today.getDate();
-            if (mm < 10) mm = '0' + mm;
-            if (dd < 10) dd = '0' + dd;
-            
-            const formattedDate = yyyy + '-' + mm + '-' + dd;
-            document.getElementById('order-date-filter').value = formattedDate;
+            try {
+                var sel = document.getElementById('salesman-select').value;
+                if (sel === "") { alert("कृपया पहले सेल्समैन का नाम चुनें!"); return; }
+                if (sel === "Company Salesman") {
+                    var other = document.getElementById('other-salesman').value;
+                    if (!other || other.trim() === "") { alert("कृपया सेल्समैन का नाम लिखें!"); return; }
+                    currentSalesman = other.trim();
+                } else {
+                    currentSalesman = sel;
+                }
+                
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'block';
+                document.getElementById('active-salesman').innerText = "सेल्समैन: " + currentSalesman;
+                
+                var today = new Date();
+                var yyyy = today.getFullYear();
+                var mm = today.getMonth() + 1;
+                var dd = today.getDate();
+                if (mm < 10) mm = '0' + mm;
+                if (dd < 10) dd = '0' + dd;
+                
+                var formattedDate = yyyy + '-' + mm + '-' + dd;
+                document.getElementById('order-date-filter').value = formattedDate;
 
-            renderProducts();
+                renderProducts();
+            } catch(e) {
+                alert("Start Error: " + e.message); // अगर अब कोई दिक्कत होगी तो एरर मैसेज स्क्रीन पर आ जाएगा
+            }
         }
 
-        // Render Products
         function renderProducts() {
-            const list = document.getElementById('product-list');
+            var list = document.getElementById('product-list');
             list.innerHTML = "";
-            products.forEach((prod, index) => {
-                const div = document.createElement('div');
+            for(var i = 0; i < products.length; i++) {
+                var prod = products[i];
+                var div = document.createElement('div');
                 div.className = 'product-card';
                 div.setAttribute('data-name', prod.toLowerCase());
-                div.innerHTML = `
-                    <div class="product-title">${prod}</div>
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label>Pieces (पीस)</label>
-                            <input type="number" id="p-qty-${index}" placeholder="Qty" oninput="calcTotal(${index})">
-                        </div>
-                        <div class="input-group">
-                            <label>Rate / Piece</label>
-                            <input type="number" id="p-rate-${index}" placeholder="₹ Rate" oninput="calcTotal(${index})">
-                        </div>
-                        <div class="input-group">
-                            <label>Cases (केस)</label>
-                            <input type="number" id="c-qty-${index}" placeholder="Qty" oninput="calcTotal(${index})">
-                        </div>
-                        <div class="input-group">
-                            <label>Rate / Case</label>
-                            <input type="number" id="c-rate-${index}" placeholder="₹ Rate" oninput="calcTotal(${index})">
-                        </div>
-                    </div>
-                    <div class="company-rate-box">
-                        <input type="checkbox" id="comp-rate-${index}" onchange="toggleCompRate(${index})">
-                        <label for="comp-rate-${index}">Company Rate (रेट याद नहीं)</label>
-                    </div>
-                    <div class="item-total" id="total-${index}">Total: ₹0</div>
-                `;
+                
+                var html = '<div class="product-title">' + prod + '</div>' +
+                           '<div class="input-grid">' +
+                               '<div class="input-group"><label>Pieces (पीस)</label><input type="number" id="p-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div>' +
+                               '<div class="input-group"><label>Rate / Piece</label><input type="number" id="p-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div>' +
+                               '<div class="input-group"><label>Cases (केस)</label><input type="number" id="c-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div>' +
+                               '<div class="input-group"><label>Rate / Case</label><input type="number" id="c-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div>' +
+                           '</div>' +
+                           '<div class="company-rate-box"><input type="checkbox" id="comp-rate-' + i + '" onchange="toggleCompRate(' + i + ')"> <label for="comp-rate-' + i + '">Company Rate (रेट याद नहीं)</label></div>' +
+                           '<div class="item-total" id="total-' + i + '">Total: ₹0</div>';
+                           
+                div.innerHTML = html;
                 list.appendChild(div);
-            });
+            }
         }
 
-        // Search Filter
         function filterProducts() {
-            const text = document.getElementById('search-input').value.toLowerCase();
-            const cards = document.querySelectorAll('.product-card');
-            cards.forEach(card => {
-                if(card.getAttribute('data-name').includes(text)) card.style.display = 'block';
-                else card.style.display = 'none';
-            });
+            var text = document.getElementById('search-input').value.toLowerCase();
+            var cards = document.querySelectorAll('.product-card');
+            for(var i = 0; i < cards.length; i++) {
+                if(cards[i].getAttribute('data-name').indexOf(text) !== -1) {
+                    cards[i].style.display = 'block';
+                } else {
+                    cards[i].style.display = 'none';
+                }
+            }
         }
 
-        // Calculate Individual Total
         function calcTotal(i) {
             if(document.getElementById('comp-rate-' + i).checked) return;
-            const pq = parseFloat(document.getElementById('p-qty-' + i).value) || 0;
-            const pr = parseFloat(document.getElementById('p-rate-' + i).value) || 0;
-            const cq = parseFloat(document.getElementById('c-qty-' + i).value) || 0;
-            const cr = parseFloat(document.getElementById('c-rate-' + i).value) || 0;
-            const total = (pq * pr) + (cq * cr);
+            var pq = parseFloat(document.getElementById('p-qty-' + i).value) || 0;
+            var pr = parseFloat(document.getElementById('p-rate-' + i).value) || 0;
+            var cq = parseFloat(document.getElementById('c-qty-' + i).value) || 0;
+            var cr = parseFloat(document.getElementById('c-rate-' + i).value) || 0;
+            var total = (pq * pr) + (cq * cr);
             document.getElementById('total-' + i).innerText = "Total: ₹" + total;
         }
 
         function toggleCompRate(i) {
-            const isChecked = document.getElementById('comp-rate-' + i).checked;
+            var isChecked = document.getElementById('comp-rate-' + i).checked;
             document.getElementById('p-rate-' + i).disabled = isChecked;
             document.getElementById('c-rate-' + i).disabled = isChecked;
             if(isChecked) {
@@ -264,7 +253,6 @@
             }
         }
 
-        // Modals
         function openCart() { document.getElementById('cart-modal').style.display = 'block'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function openSavedOrders() {
@@ -272,80 +260,77 @@
             document.getElementById('saved-orders-modal').style.display = 'block';
         }
 
-        // Get Cart Data
         function getCartData() {
-            let items = [];
-            products.forEach((prod, i) => {
-                const pq = document.getElementById('p-qty-' + i).value;
-                const pr = document.getElementById('p-rate-' + i).value;
-                const cq = document.getElementById('c-qty-' + i).value;
-                const cr = document.getElementById('c-rate-' + i).value;
-                const comp = document.getElementById('comp-rate-' + i).checked;
+            var items = [];
+            for(var i = 0; i < products.length; i++) {
+                var prod = products[i];
+                var pq = document.getElementById('p-qty-' + i).value;
+                var pr = document.getElementById('p-rate-' + i).value;
+                var cq = document.getElementById('c-qty-' + i).value;
+                var cr = document.getElementById('c-rate-' + i).value;
+                var comp = document.getElementById('comp-rate-' + i).checked;
                 
                 if (pq || cq) {
                     items.push({ name: prod, pq: pq, pr: pr, cq: cq, cr: cr, comp: comp });
                 }
-            });
+            }
             return items;
         }
 
-        // Preview & WhatsApp (Single Order)
         function showPreview() {
-            const partyName = document.getElementById('party-name').value.trim();
-            if(!partyName) { alert("पार्टी का नाम डालना अनिवार्य है!"); return; }
+            var partyName = document.getElementById('party-name').value;
+            if(!partyName || partyName.trim() === "") { alert("पार्टी का नाम डालना अनिवार्य है!"); return; }
             
-            const items = getCartData();
+            var items = getCartData();
             if(items.length === 0) { alert("ऑर्डर में कोई प्रोडक्ट नहीं है!"); return; }
 
-            let msg = "*ORDER DETAILS*\n";
+            var msg = "*ORDER DETAILS*\n";
             msg += "*Salesman:* " + currentSalesman + "\n";
-            msg += "*Party Name:* *" + partyName + "*\n";
+            msg += "*Party Name:* *" + partyName.trim() + "*\n";
             msg += "*Contact:* " + document.getElementById('party-number').value + "\n";
             msg += "*Address:* " + document.getElementById('party-address').value + "\n\n";
             msg += "*Items:*\n";
 
-            let grandTotal = 0;
-            items.forEach(item => {
+            var grandTotal = 0;
+            for(var i = 0; i < items.length; i++) {
+                var item = items[i];
                 msg += "- " + item.name + "\n";
                 if(item.pq) {
                     if(item.comp) { msg += "   " + item.pq + " Pieces (Company Rate)\n"; } 
-                    else { let t = item.pq * item.pr; grandTotal += t; msg += "   " + item.pq + " Pieces x ₹" + item.pr + " = ₹" + t + "\n"; }
+                    else { var t1 = item.pq * item.pr; grandTotal += t1; msg += "   " + item.pq + " Pieces x ₹" + item.pr + " = ₹" + t1 + "\n"; }
                 }
                 if(item.cq) {
                     if(item.comp) { msg += "   " + item.cq + " Cases (Company Rate)\n"; } 
-                    else { let t = item.cq * item.cr; grandTotal += t; msg += "   " + item.cq + " Cases x ₹" + item.cr + " = ₹" + t + "\n"; }
+                    else { var t2 = item.cq * item.cr; grandTotal += t2; msg += "   " + item.cq + " Cases x ₹" + item.cr + " = ₹" + t2 + "\n"; }
                 }
-            });
+            }
             
             if(grandTotal > 0) { msg += "\n*Total Bill: ₹" + grandTotal + "*"; }
 
             document.getElementById('preview-text').innerText = msg;
-            
-            const waUrl = "https://wa.me/" + phoneNo + "?text=" + encodeURIComponent(msg);
+            var waUrl = "https://wa.me/" + phoneNo + "?text=" + encodeURIComponent(msg);
             document.getElementById('wa-link').href = waUrl;
-
             document.getElementById('preview-modal').style.display = 'block';
         }
 
-        // Save Order Offline
         function saveCurrentOrder() {
-            const partyName = document.getElementById('party-name').value.trim();
-            if(!partyName) { alert("पार्टी का नाम डालें!"); return; }
-            const items = getCartData();
+            var partyName = document.getElementById('party-name').value;
+            if(!partyName || partyName.trim() === "") { alert("पार्टी का नाम डालें!"); return; }
+            var items = getCartData();
             if(items.length === 0) { alert("ऑर्डर खाली है!"); return; }
 
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            let mm = today.getMonth() + 1;
-            let dd = today.getDate();
+            var today = new Date();
+            var yyyy = today.getFullYear();
+            var mm = today.getMonth() + 1;
+            var dd = today.getDate();
             if (mm < 10) mm = '0' + mm;
             if (dd < 10) dd = '0' + dd;
-            const safeISODate = yyyy + '-' + mm + '-' + dd;
+            var safeISODate = yyyy + '-' + mm + '-' + dd;
 
-            let orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
             orders.push({
                 salesman: currentSalesman,
-                party: partyName,
+                party: partyName.trim(),
                 date: today.toLocaleString(),
                 dateValue: safeISODate,
                 items: items
@@ -356,20 +341,18 @@
             resetApp();
         }
 
-        // Clear Date Filter
         function clearDateFilter() {
             document.getElementById('order-date-filter').value = "";
             renderSavedOrders();
         }
 
-        // Clear All Orders (History Delete)
         function clearAllOrders() {
-            let orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
             if(orders.length === 0) {
                 alert("हिस्ट्री पहले से ही खाली है।");
                 return;
             }
-            let confirmDelete = confirm("क्या आप सच में सभी ऑर्डर्स डिलीट करना चाहते हैं? ध्यान रहे, यह डेटा वापस नहीं आएगा।");
+            var confirmDelete = confirm("क्या आप सच में सभी ऑर्डर्स डिलीट करना चाहते हैं? ध्यान रहे, यह डेटा वापस नहीं आएगा।");
             if (confirmDelete) {
                 localStorage.removeItem('savedOrders');
                 renderSavedOrders();
@@ -377,17 +360,18 @@
             }
         }
 
-        // Render Saved Orders with Date Filter
         function renderSavedOrders() {
-            const list = document.getElementById('saved-orders-list');
-            const filterDate = document.getElementById('order-date-filter').value;
-            let orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            var list = document.getElementById('saved-orders-list');
+            var filterDate = document.getElementById('order-date-filter').value;
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
             
             list.innerHTML = "";
             
-            let filteredOrders = orders;
-            if (filterDate) {
-                filteredOrders = orders.filter(o => o.dateValue === filterDate);
+            var filteredOrders = [];
+            for(var k = 0; k < orders.length; k++) {
+                if(!filterDate || orders[k].dateValue === filterDate) {
+                    filteredOrders.push(orders[k]);
+                }
             }
 
             if(filteredOrders.length === 0) { 
@@ -395,6 +379,7 @@
                 return; 
             }
             
-            filteredOrders.forEach(o => {
-                let html = '<div class="saved-order-card">';
-                html += '<strong>' + o.party + '</strong> <br><small style="color:gray">' + o.date
+            for(var oIdx = 0; oIdx < filteredOrders.length; oIdx++) {
+                var o = filteredOrders[oIdx];
+                var html = '<div class="saved-order-card">';
+                html += '<strong>' + o.party + '</strong> <br><small style="color:gray"

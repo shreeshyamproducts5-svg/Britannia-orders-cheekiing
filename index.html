@@ -46,6 +46,10 @@
         .grand-total { color: #d32f2f; font-size: 16px; font-weight: bold; margin-top: 10px; text-align: right; border-top: 1px solid #ddd; padding-top: 5px;}
         
         .filter-section { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        
+        /* Checkbox Styling */
+        .order-cb { width: 22px; height: 22px; cursor: pointer; margin: 0; }
+        .order-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -71,12 +75,18 @@
     <!-- Main App Screen -->
     <div id="app-screen">
         <header>
-            <h3 style="margin:0;">Britannia Order Collection</h3>
+            <h3 style="margin:0;">Order Collection</h3>
             <div id="active-salesman" style="font-size:14px; margin-top:5px;"></div>
         </header>
         
         <div class="container">
             <div class="search-bar">
+                <!-- Company Filter -->
+                <select id="company-select" onchange="filterProducts()" style="margin-top: 0;">
+                    <option value="All">-- सभी कंपनियाँ (All Companies) --</option>
+                    <option value="Britannia" selected>Britannia</option>
+                    <option value="Parle">Parle (डेमो के लिए)</option>
+                </select>
                 <input type="text" id="search-input" placeholder="प्रोडक्ट सर्च करें..." onkeyup="filterProducts()">
             </div>
             <div id="product-list"></div>
@@ -145,82 +155,86 @@
 
             <div id="saved-orders-list"></div>
             
-            <button class="btn-whatsapp" onclick="shareAllOrders('admin')" style="margin-top: 20px;">1. Share All to Admin (Direct)</button>
-            <button class="btn-group" onclick="shareAllOrders('group')">2. Share All in Group (ग्रुप में भेजें)</button>
+            <button class="btn-whatsapp" onclick="shareAllOrders('admin')" style="margin-top: 10px;">1. Share Selected to Admin (Direct)</button>
+            <button class="btn-group" onclick="shareAllOrders('group')">2. Share Selected in Group (ग्रुप में भेजें)</button>
             <button class="btn-clear" onclick="clearAllOrders()">Clear Order History (डिलीट करें)</button>
         </div>
     </div>
 
     <script>
+        // नए प्रोडक्ट्स डालने के लिए बस 'company' का नाम बदलना है।
         var products = [
-            { name: "BAR CAKE GOBBLES CHOCHO MRP-13.5", pack: "72" },
-            { name: "BAR CAKE GOBBLES FRUIT MRP-15", pack: "72" },
-            { name: "BAR CAKE GOBBLES FRUIT MRP-27", pack: "40" },
-            { name: "BAR CAKE GOLBBLES CHOCHO MRP-27", pack: "40" },
-            { name: "BOURBON MRP-30", pack: "80" },
-            { name: "BOURBON MRP-40-GST", pack: "48" },
-            { name: "BRITANNIA GHEE 1LTR", pack: "18" },
-            { name: "BROWNIE NON VEG MRP-20", pack: "90" },
-            { name: "FIFTY-FIFTY CHEEZE DIPPED MRP-50", pack: "60" },
-            { name: "FIFTY-FIFTY MRP-10 GST (MARGIN 11.8)", pack: "108" },
-            { name: "FIFTY-FIFTY MRP-10[GOLMAAL-BUTTER] GST MARGIN-9.8", pack: "100" },
-            { name: "FIFTY-FIFTY MRP-10[GOLMAAL] GST (MARGIN 11.8)", pack: "72" },
-            { name: "FIFTY-FIFTY MRP-5-GST", pack: "144" },
-            { name: "GOODAY MRP-10[BUTTER]-PACK CASE", pack: "1" },
-            { name: "GOODAY MRP-10[CASHEW] GST (MARGIN 9.45)", pack: "84" },
-            { name: "GOODAY MRP-150[CASHEW]", pack: "10" },
-            { name: "GOODAY MRP-20[FRUIT & NUT] GST MARGIN-11.8", pack: "60" },
-            { name: "GOODAY MRP-40[BUTTER]-GST (MARGIN-9.8)", pack: "20" },
-            { name: "GOODAY MRP-45[CASHEW] GST-( MARGIN-9.45)", pack: "20" },
-            { name: "GOODAY MRP-55[PISTA]", pack: "48" },
-            { name: "GOODAY MRP-5[BUTTER] PACK CASE", pack: "1" },
-            { name: "GOODAY MRP-140[PISTA] GST (MARGIN 9.9)", pack: "10" },
-            { name: "LAYER CAKE 12GM[ VEG] -ORANGE GST (MARGIN 18.72)", pack: "320" },
-            { name: "LAYER CAKE 12GM[ VEG] GST (MARGIN 18.72)", pack: "424" },
-            { name: "MARIGOLD MRP-10GST-", pack: "96" },
-            { name: "MARIGOLD MRP-45GST-", pack: "36" },
-            { name: "MILKBIKIS MRP-10 GST MARGIN-11.8", pack: "96" },
-            { name: "MILKBIKIS MRP-30", pack: "42" },
-            { name: "MILKBIKIS MRP-35GST-", pack: "32" },
-            { name: "MILKBIKIS MRP-5 GST (MARGIN 11.65)", pack: "168" },
-            { name: "NICE TIME MRP-25 GST(MARGIN-9.8)", pack: "40" },
-            { name: "NUTRI CHOICE MRP-10", pack: "72" },
-            { name: "NUTRI CHOICE MRP-25 GST (MARGIN-11.8)", pack: "72" },
-            { name: "PURE MAGIC MRP-30 GST MARGIN11.8-", pack: "60" },
-            { name: "RUSK MRP-10 GST MARGIN-19.8", pack: "36" },
-            { name: "RUSK MRP-50 GST MARGIN-15", pack: "32" },
-            { name: "SWISS ROLL TRIPLE CHOCHO MRP-9", pack: "240" },
-            { name: "TCW LD CHEESE 28.7+2.8G", pack: "144" },
-            { name: "TCW LD CHOCHO MRP-05", pack: "320" },
-            { name: "TIGER COCONUT MRP-10 GST MARGIN-11.8", pack: "120" },
-            { name: "TIGER GLUCOSE MRP-10 GST(MARGIN 9.8)", pack: "60" },
-            { name: "TIGER GLUCOSE MRP-5 GST (MARGIN 9.9)", pack: "144" },
-            { name: "TIGER KREEMZ MRP-5[CHOCHO-MILK] GST (MARGIN 11.65)", pack: "144" },
-            { name: "TIGER KREEMZ MRP-5[CHOCHO] GST (MARGIN 11.65)", pack: "144" },
-            { name: "TIGER KREEMZ MRP-5[ELAICHI]-GST", pack: "144" },
-            { name: "TIGER KREEMZ MRP-5[ORANGE] GST (MARGIN 11.65)", pack: "144" },
-            { name: "TIGER KRUNCH MRP-10 GST MARGIN-11.8", pack: "108" },
-            { name: "TIGER KRUNCH MRP -5 GST (MARGIN 11.65)", pack: "216" },
-            { name: "TREAT CRM MRP-100[ORANGE]-GST", pack: "20" },
-            { name: "TREAT CRM MRP-10[JIMJAM]", pack: "120" },
-            { name: "TREAT CRM MRP-10[ORANGE]-GST", pack: "80" },
-            { name: "TREAT CRM MRP-10[VANILLA]-GST", pack: "80" },
-            { name: "TREAT CRM[CHOCHO] MRP-10", pack: "80" },
-            { name: "TREAT CRM[JIMJAM] MRP-10 PACK CASE", pack: "1" },
-            { name: "TREAT CROISSANT MIXED FRUIT", pack: "20" },
-            { name: "TREAT WAFERS LD CHEESE 10.2", pack: "320" },
-            { name: "TREAT WAFERS LD CHOCO 10.2G", pack: "320" },
-            { name: "TREAT WLD CHOCO 28.7+1.8G", pack: "144" },
-            { name: "VEG BROWNIE 40GM", pack: "90" },
-            { name: "VEG CAKE MRP-10[CHOCOLATE]-GST", pack: "72" },
-            { name: "VEG CAKE MRP-10[FRUIT]-GST", pack: "72" },
-            { name: "VEG CAKE MRP-25[CHOCOLATE] GST (MARGIN 11.8)", pack: "60" },
-            { name: "VEG CAKE MRP-25[FRUIT] GST MARGIN-11.8", pack: "60" },
-            { name: "WINKIN 180ML [COLD-COFFEE]-GST", pack: "30" },
-            { name: "WINKIN LASSI 180ML [CLASSIC]-GST", pack: "30" },
-            { name: "WINKIN SHAKE 180ML [CHOCHOJ-GST", pack: "30" },
-            { name: "WINKIN SHAKE 180ML[STRAWBERRY]-GST", pack: "30" },
-            { name: "WINKIN SHAKE 180ML [VANILLA]-GST", pack: "30" }
+            { company: "Britannia", name: "BAR CAKE GOBBLES CHOCHO MRP-13.5", pack: "72" },
+            { company: "Britannia", name: "BAR CAKE GOBBLES FRUIT MRP-15", pack: "72" },
+            { company: "Britannia", name: "BAR CAKE GOBBLES FRUIT MRP-27", pack: "40" },
+            { company: "Britannia", name: "BAR CAKE GOLBBLES CHOCHO MRP-27", pack: "40" },
+            { company: "Britannia", name: "BOURBON MRP-30", pack: "80" },
+            { company: "Britannia", name: "BOURBON MRP-40-GST", pack: "48" },
+            { company: "Britannia", name: "BRITANNIA GHEE 1LTR", pack: "18" },
+            { company: "Britannia", name: "BROWNIE NON VEG MRP-20", pack: "90" },
+            { company: "Britannia", name: "FIFTY-FIFTY CHEEZE DIPPED MRP-50", pack: "60" },
+            { company: "Britannia", name: "FIFTY-FIFTY MRP-10 GST (MARGIN 11.8)", pack: "108" },
+            { company: "Britannia", name: "FIFTY-FIFTY MRP-10[GOLMAAL-BUTTER] GST MARGIN-9.8", pack: "100" },
+            { company: "Britannia", name: "FIFTY-FIFTY MRP-10[GOLMAAL] GST (MARGIN 11.8)", pack: "72" },
+            { company: "Britannia", name: "FIFTY-FIFTY MRP-5-GST", pack: "144" },
+            { company: "Britannia", name: "GOODAY MRP-10[BUTTER]-PACK CASE", pack: "1" },
+            { company: "Britannia", name: "GOODAY MRP-10[CASHEW] GST (MARGIN 9.45)", pack: "84" },
+            { company: "Britannia", name: "GOODAY MRP-150[CASHEW]", pack: "10" },
+            { company: "Britannia", name: "GOODAY MRP-20[FRUIT & NUT] GST MARGIN-11.8", pack: "60" },
+            { company: "Britannia", name: "GOODAY MRP-40[BUTTER]-GST (MARGIN-9.8)", pack: "20" },
+            { company: "Britannia", name: "GOODAY MRP-45[CASHEW] GST-( MARGIN-9.45)", pack: "20" },
+            { company: "Britannia", name: "GOODAY MRP-55[PISTA]", pack: "48" },
+            { company: "Britannia", name: "GOODAY MRP-5[BUTTER] PACK CASE", pack: "1" },
+            { company: "Britannia", name: "GOODAY MRP-140[PISTA] GST (MARGIN 9.9)", pack: "10" },
+            { company: "Britannia", name: "LAYER CAKE 12GM[ VEG] -ORANGE GST (MARGIN 18.72)", pack: "320" },
+            { company: "Britannia", name: "LAYER CAKE 12GM[ VEG] GST (MARGIN 18.72)", pack: "424" },
+            { company: "Britannia", name: "MARIGOLD MRP-10GST-", pack: "96" },
+            { company: "Britannia", name: "MARIGOLD MRP-45GST-", pack: "36" },
+            { company: "Britannia", name: "MILKBIKIS MRP-10 GST MARGIN-11.8", pack: "96" },
+            { company: "Britannia", name: "MILKBIKIS MRP-30", pack: "42" },
+            { company: "Britannia", name: "MILKBIKIS MRP-35GST-", pack: "32" },
+            { company: "Britannia", name: "MILKBIKIS MRP-5 GST (MARGIN 11.65)", pack: "168" },
+            { company: "Britannia", name: "NICE TIME MRP-25 GST(MARGIN-9.8)", pack: "40" },
+            { company: "Britannia", name: "NUTRI CHOICE MRP-10", pack: "72" },
+            { company: "Britannia", name: "NUTRI CHOICE MRP-25 GST (MARGIN-11.8)", pack: "72" },
+            { company: "Britannia", name: "PURE MAGIC MRP-30 GST MARGIN11.8-", pack: "60" },
+            { company: "Britannia", name: "RUSK MRP-10 GST MARGIN-19.8", pack: "36" },
+            { company: "Britannia", name: "RUSK MRP-50 GST MARGIN-15", pack: "32" },
+            { company: "Britannia", name: "SWISS ROLL TRIPLE CHOCHO MRP-9", pack: "240" },
+            { company: "Britannia", name: "TCW LD CHEESE 28.7+2.8G", pack: "144" },
+            { company: "Britannia", name: "TCW LD CHOCHO MRP-05", pack: "320" },
+            { company: "Britannia", name: "TIGER COCONUT MRP-10 GST MARGIN-11.8", pack: "120" },
+            { company: "Britannia", name: "TIGER GLUCOSE MRP-10 GST(MARGIN 9.8)", pack: "60" },
+            { company: "Britannia", name: "TIGER GLUCOSE MRP-5 GST (MARGIN 9.9)", pack: "144" },
+            { company: "Britannia", name: "TIGER KREEMZ MRP-5[CHOCHO-MILK] GST (MARGIN 11.65)", pack: "144" },
+            { company: "Britannia", name: "TIGER KREEMZ MRP-5[CHOCHO] GST (MARGIN 11.65)", pack: "144" },
+            { company: "Britannia", name: "TIGER KREEMZ MRP-5[ELAICHI]-GST", pack: "144" },
+            { company: "Britannia", name: "TIGER KREEMZ MRP-5[ORANGE] GST (MARGIN 11.65)", pack: "144" },
+            { company: "Britannia", name: "TIGER KRUNCH MRP-10 GST MARGIN-11.8", pack: "108" },
+            { company: "Britannia", name: "TIGER KRUNCH MRP -5 GST (MARGIN 11.65)", pack: "216" },
+            { company: "Britannia", name: "TREAT CRM MRP-100[ORANGE]-GST", pack: "20" },
+            { company: "Britannia", name: "TREAT CRM MRP-10[JIMJAM]", pack: "120" },
+            { company: "Britannia", name: "TREAT CRM MRP-10[ORANGE]-GST", pack: "80" },
+            { company: "Britannia", name: "TREAT CRM MRP-10[VANILLA]-GST", pack: "80" },
+            { company: "Britannia", name: "TREAT CRM[CHOCHO] MRP-10", pack: "80" },
+            { company: "Britannia", name: "TREAT CRM[JIMJAM] MRP-10 PACK CASE", pack: "1" },
+            { company: "Britannia", name: "TREAT CROISSANT MIXED FRUIT", pack: "20" },
+            { company: "Britannia", name: "TREAT WAFERS LD CHEESE 10.2", pack: "320" },
+            { company: "Britannia", name: "TREAT WAFERS LD CHOCO 10.2G", pack: "320" },
+            { company: "Britannia", name: "TREAT WLD CHOCO 28.7+1.8G", pack: "144" },
+            { company: "Britannia", name: "VEG BROWNIE 40GM", pack: "90" },
+            { company: "Britannia", name: "VEG CAKE MRP-10[CHOCOLATE]-GST", pack: "72" },
+            { company: "Britannia", name: "VEG CAKE MRP-10[FRUIT]-GST", pack: "72" },
+            { company: "Britannia", name: "VEG CAKE MRP-25[CHOCOLATE] GST (MARGIN 11.8)", pack: "60" },
+            { company: "Britannia", name: "VEG CAKE MRP-25[FRUIT] GST MARGIN-11.8", pack: "60" },
+            { company: "Britannia", name: "WINKIN 180ML [COLD-COFFEE]-GST", pack: "30" },
+            { company: "Britannia", name: "WINKIN LASSI 180ML [CLASSIC]-GST", pack: "30" },
+            { company: "Britannia", name: "WINKIN SHAKE 180ML [CHOCHOJ-GST", pack: "30" },
+            { company: "Britannia", name: "WINKIN SHAKE 180ML[STRAWBERRY]-GST", pack: "30" },
+            { company: "Britannia", name: "WINKIN SHAKE 180ML [VANILLA]-GST", pack: "30" },
+            
+            // Demo Product for Parle
+            { company: "Parle", name: "PARLE-G MRP-10 DEMO", pack: "144" }
         ];
 
         var currentSalesman = "";
@@ -271,8 +285,9 @@
                 var div = document.createElement('div');
                 div.className = 'product-card';
                 div.setAttribute('data-name', prod.name.toLowerCase());
+                div.setAttribute('data-company', prod.company);
                 
-                var html = '<div class="product-title">' + prod.name + '<br><span class="packing-info">📦 पैकिंग: ' + prod.pack + ' पीस / केस</span></div>' +
+                var html = '<div class="product-title">' + prod.name + '<br><span class="packing-info">📦 पैकिंग: ' + prod.pack + ' पीस / केस ('+prod.company+')</span></div>' +
                            '<div class="input-grid">' +
                                '<div class="input-group"><label>Pieces (पीस)</label><input type="number" id="p-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div>' +
                                '<div class="input-group"><label>Rate / Piece</label><input type="number" id="p-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div>' +
@@ -285,13 +300,23 @@
                 div.innerHTML = html;
                 list.appendChild(div);
             }
+            filterProducts(); // Ensure the newly rendered items respect the current filter
         }
 
+        // New Filter Logic: Matches Both Text and Company Dropdown
         function filterProducts() {
             var text = document.getElementById('search-input').value.toLowerCase();
+            var selectedCompany = document.getElementById('company-select').value;
             var cards = document.querySelectorAll('.product-card');
+            
             for(var i = 0; i < cards.length; i++) {
-                if(cards[i].getAttribute('data-name').indexOf(text) !== -1) {
+                var cardCompany = cards[i].getAttribute('data-company');
+                var cardName = cards[i].getAttribute('data-name');
+                
+                var matchesCompany = (selectedCompany === "All" || cardCompany === selectedCompany);
+                var matchesText = (cardName.indexOf(text) !== -1);
+                
+                if(matchesCompany && matchesText) {
                     cards[i].style.display = 'block';
                 } else {
                     cards[i].style.display = 'none';
@@ -452,7 +477,13 @@
             for(var oIdx = 0; oIdx < filteredOrders.length; oIdx++) {
                 var o = filteredOrders[oIdx];
                 var html = '<div class="saved-order-card">';
-                html += '<strong>' + o.party + '</strong> <br><small style="color:gray">' + o.date + '</small>';
+                
+                // Add Checkbox here
+                html += '<label class="order-header-row">';
+                html += '<span><strong>' + o.party + '</strong> <br><small style="color:gray">' + o.date + '</small></span>';
+                html += '<input type="checkbox" class="order-cb" data-index="' + oIdx + '" checked>';
+                html += '</label>';
+
                 html += '<div class="order-details-box">';
                 
                 var grandTotal = 0;
@@ -477,6 +508,7 @@
             }
         }
 
+        // Modified Share function to only share selected orders
         function shareAllOrders(shareType) {
             var filterDate = document.getElementById('order-date-filter').value;
             var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
@@ -490,7 +522,22 @@
 
             if(filteredOrders.length === 0) { alert("शेयर करने के लिए कोई ऑर्डर नहीं है!"); return; }
 
-            var msg = "*ORDERS (" + filteredOrders.length + ")*\n*Salesman:* " + currentSalesman + "\n";
+            // Find selected orders via checkboxes
+            var finalOrdersToShare = [];
+            var cbs = document.querySelectorAll('.order-cb');
+            for(var c=0; c < cbs.length; c++) {
+                if(cbs[c].checked) {
+                    var idx = parseInt(cbs[c].getAttribute('data-index'));
+                    finalOrdersToShare.push(filteredOrders[idx]);
+                }
+            }
+
+            if(finalOrdersToShare.length === 0) {
+                alert("कृपया शेयर करने के लिए कम से कम एक ऑर्डर बॉक्स पर टिक (✅) लगाएँ!");
+                return;
+            }
+
+            var msg = "*ORDERS (" + finalOrdersToShare.length + ")*\n*Salesman:* " + currentSalesman + "\n";
             if (filterDate) {
                 var parts = filterDate.split('-');
                 if(parts.length === 3) {
@@ -500,8 +547,8 @@
                 msg += "\n";
             }
             
-            for(var oIdx = 0; oIdx < filteredOrders.length; oIdx++) {
-                var o = filteredOrders[oIdx];
+            for(var oIdx = 0; oIdx < finalOrdersToShare.length; oIdx++) {
+                var o = finalOrdersToShare[oIdx];
                 msg += "*" + (oIdx + 1) + ". Party Name:* *" + o.party + "*\n";
                 var partyTotal = 0;
                 

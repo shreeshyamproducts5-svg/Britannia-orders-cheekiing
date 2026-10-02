@@ -683,10 +683,16 @@
                 itemsDetail: JSON.stringify(orderData.items)
             };
 
+            // CORS Bypass Method for Google Apps Script
             fetch(GOOGLE_SHEET_API_URL, {
                 method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8'
+                },
                 body: JSON.stringify(payload)
-            }).catch(e => console.log("Tracking Error (Ignored):", e));
+            }).then(() => console.log("Order Tracking Sent"))
+              .catch(e => console.log("Tracking Error:", e));
         }
 
         function saveCurrentOrder() {

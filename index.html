@@ -49,8 +49,6 @@
         .grand-total { color: #d32f2f; font-size: 16px; font-weight: bold; margin-top: 10px; text-align: right; border-top: 1px solid #ddd; padding-top: 5px;}
         
         .filter-section { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
-        
-        /* Checkbox Styling */
         .order-cb { width: 22px; height: 22px; cursor: pointer; margin: 0; }
         .order-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
     </style>
@@ -81,6 +79,7 @@
         <header>
             <h3 style="margin:0;">Order Collection</h3>
             <div id="active-salesman" style="font-size:14px; margin-top:5px;"></div>
+            <div id="draft-status" style="font-size:13px; margin-top:5px; color:#a5d6a7; font-weight:bold;"></div>
         </header>
         
         <div class="container">
@@ -107,17 +106,18 @@
         </div>
         <div class="modal-body">
             <label>Party Name (पार्टी का नाम):</label>
-            <input type="text" id="party-name" placeholder="पार्टी का नाम">
+            <input type="text" id="party-name" placeholder="पार्टी का नाम" oninput="saveDraft()">
             
             <label>Contact Number:</label>
-            <input type="number" id="party-number" placeholder="मोबाइल नंबर">
+            <input type="number" id="party-number" placeholder="मोबाइल नंबर" oninput="saveDraft()">
             
             <label>Address (पता):</label>
-            <input type="text" id="party-address" placeholder="दुकान का पता">
+            <input type="text" id="party-address" placeholder="दुकान का पता" oninput="saveDraft()">
 
             <hr>
-            <button class="btn-view" onclick="saveCurrentOrder()" style="margin-bottom: 10px;">Save Order (Offline)</button>
-            <button class="btn-whatsapp" onclick="showPreview()">Preview & WhatsApp</button>
+            <button class="btn-view" onclick="saveCurrentOrder()" style="margin-bottom: 10px;">Save Order (ऑर्डर सेव करें)</button>
+            <button class="btn-whatsapp" onclick="showPreview()" style="margin-bottom: 10px;">Preview & WhatsApp</button>
+            <button class="btn-trash" onclick="resetAppWithConfirmation()" style="margin-bottom: 10px;">Cancel Order (नया ऑर्डर / ड्राफ्ट डिलीट)</button>
         </div>
     </div>
 
@@ -176,6 +176,7 @@
         var products = [];
         var currentSalesman = "";
         var phoneNo = "917219929217";
+        var isLoadingDraft = false; // Draft loading flag
 
         // --- CSV LOADING LOGIC ---
         window.onload = function() {
@@ -230,13 +231,11 @@
                     var pack = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : "1";
                     var comp = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "Company";
                     
-                    // Column D (Index 3) for Stock extraction
                     var stockNum = 0;
                     if(cols.length > 3 && cols[3]) {
                         stockNum = parseFloat(cols[3].replace(/[^0-9.-]/g, '')) || 0;
                     }
 
-                    // Column F (Index 5) for Sale Rate extraction
                     var sRate = "0";
                     if(cols.length > 5 && cols[5]) {
                         sRate = cols[5].replace(/^"|"$/g, '').trim();
@@ -316,7 +315,6 @@
                 var sRateNum = parseFloat(prod.saleRate);
                 var displayRate = isNaN(sRateNum) ? prod.saleRate : sRateNum.toFixed(2);
                 
-                // Dynamic Stock Display
                 var stockStatus = "";
                 if(prod.currentStock > 0) {
                     stockStatus = '<span class="stock-good">🟢 स्टॉक: ' + prod.currentStock + ' पीस</span>';
@@ -340,6 +338,7 @@
                 list.appendChild(div);
             }
             filterProducts(); 
+            loadDraft(); // Load draft after UI rendering
         }
 
         function filterProducts() {
@@ -362,7 +361,84 @@
             }
         }
 
-        // Live Stock Validation Logic
+        // --- DRAFT (AUTO-SAVE) LOGIC ---
+        function saveDraft() {
+            if (isLoadingDraft) return;
+            var draft = { items: {}, party: {} };
+            var hasData = false;
+            
+            for(var i = 0; i < products.length; i++) {
+                var pq = document.getElementById('p-qty-'+i) ? document.getElementById('p-qty-'+i).value : "";
+                var pr = document.getElementById('p-rate-'+i) ? document.getElementById('p-rate-'+i).value : "";
+                var cq = document.getElementById('c-qty-'+i) ? document.getElementById('c-qty-'+i).value : "";
+                var cr = document.getElementById('c-rate-'+i) ? document.getElementById('c-rate-'+i).value : "";
+                var comp = document.getElementById('comp-rate-'+i) ? document.getElementById('comp-rate-'+i).checked : false;
+                
+                if(pq || pr || cq || cr || comp) {
+                    draft.items[i] = { pq: pq, pr: pr, cq: cq, cr: cr, comp: comp };
+                    hasData = true;
+                }
+            }
+            
+            draft.party = {
+                name: document.getElementById('party-name').value || "",
+                num: document.getElementById('party-number').value || "",
+                add: document.getElementById('party-address').value || ""
+            };
+            if(draft.party.name || draft.party.num || draft.party.add) hasData = true;
+
+            if(hasData) {
+                localStorage.setItem('draftOrder_' + currentSalesman, JSON.stringify(draft));
+                var now = new Date();
+                var timeStr = now.toLocaleTimeString('en-IN', { hour: 'numeric', minute: 'numeric', hour12: true });
+                document.getElementById('draft-status').innerHTML = "<span>💾 ड्राफ्ट ऑटो-सेव: " + timeStr + "</span>";
+            } else {
+                localStorage.removeItem('draftOrder_' + currentSalesman);
+                document.getElementById('draft-status').innerHTML = "";
+            }
+        }
+
+        function loadDraft() {
+            var draftStr = localStorage.getItem('draftOrder_' + currentSalesman);
+            if(draftStr) {
+                isLoadingDraft = true; // Prevent re-saving during load
+                var draft = JSON.parse(draftStr);
+                
+                for(var i in draft.items) {
+                    if(document.getElementById('p-qty-'+i)) {
+                        document.getElementById('p-qty-'+i).value = draft.items[i].pq || "";
+                        document.getElementById('p-rate-'+i).value = draft.items[i].pr || "";
+                        document.getElementById('c-qty-'+i).value = draft.items[i].cq || "";
+                        document.getElementById('c-rate-'+i).value = draft.items[i].cr || "";
+                        
+                        var compChecked = draft.items[i].comp || false;
+                        document.getElementById('comp-rate-'+i).checked = compChecked;
+                        document.getElementById('p-rate-'+i).disabled = compChecked;
+                        document.getElementById('c-rate-'+i).disabled = compChecked;
+                        
+                        if(compChecked) {
+                            document.getElementById('total-' + i).innerText = "Total: Company Rate";
+                        } else {
+                            var pq = parseFloat(draft.items[i].pq) || 0;
+                            var pr = parseFloat(draft.items[i].pr) || 0;
+                            var cq = parseFloat(draft.items[i].cq) || 0;
+                            var cr = parseFloat(draft.items[i].cr) || 0;
+                            var total = (pq * pr) + (cq * cr);
+                            document.getElementById('total-' + i).innerText = "Total: ₹" + total;
+                        }
+                    }
+                }
+                
+                if(draft.party) {
+                    document.getElementById('party-name').value = draft.party.name || "";
+                    document.getElementById('party-number').value = draft.party.num || "";
+                    document.getElementById('party-address').value = draft.party.add || "";
+                }
+                document.getElementById('draft-status').innerHTML = "<span style='color:#fbc02d'>⚠️ पुराना ड्राफ्ट रिकवर किया गया</span>";
+                isLoadingDraft = false;
+            }
+        }
+
         function calcTotal(i) {
             if(document.getElementById('comp-rate-' + i).checked) return;
             var pq = parseFloat(document.getElementById('p-qty-' + i).value) || 0;
@@ -374,7 +450,6 @@
             var reqPieces = pq + (cq * packSize);
             var available = products[i].currentStock;
 
-            // Restrict from over-booking stock
             if(reqPieces > available) {
                 alert("⚠️ स्टॉक खत्म! आपके पास केवल " + available + " पीस बचे हैं।");
                 document.getElementById('p-qty-' + i).value = "";
@@ -384,6 +459,8 @@
 
             var total = (pq * pr) + (cq * cr);
             document.getElementById('total-' + i).innerText = "Total: ₹" + total;
+            
+            saveDraft();
         }
 
         function toggleCompRate(i) {
@@ -395,6 +472,7 @@
             } else {
                 calcTotal(i);
             }
+            saveDraft();
         }
 
         function openCart() { document.getElementById('cart-modal').style.display = 'block'; }
@@ -463,7 +541,6 @@
             var items = getCartData();
             if(items.length === 0) { alert("ऑर्डर खाली है!"); return; }
 
-            // Deduct stock in memory for subsequent orders
             for(var j = 0; j < items.length; j++) {
                 var prodIndex = products.findIndex(p => p.name === items[j].name);
                 if(prodIndex !== -1) {
@@ -493,6 +570,26 @@
             alert("ऑर्डर सफलतापूर्वक सेव हो गया!");
             closeModal('cart-modal');
             resetApp();
+        }
+
+        function resetAppWithConfirmation() {
+            if(confirm("क्या आप इस अधूरे ऑर्डर (ड्राफ्ट) को डिलीट करके नया ऑर्डर शुरू करना चाहते हैं?")) {
+                closeModal('cart-modal');
+                resetApp();
+            }
+        }
+
+        function resetApp() {
+            document.getElementById('party-name').value = "";
+            document.getElementById('party-number').value = "";
+            document.getElementById('party-address').value = "";
+            document.getElementById('search-input').value = "";
+            
+            // Clear Draft
+            localStorage.removeItem('draftOrder_' + currentSalesman);
+            document.getElementById('draft-status').innerHTML = "";
+            
+            renderProducts(); 
         }
 
         function clearDateFilter() {
@@ -677,13 +774,6 @@
             window.open(url, '_blank');
         }
 
-        function resetApp() {
-            document.getElementById('party-name').value = "";
-            document.getElementById('party-number').value = "";
-            document.getElementById('party-address').value = "";
-            document.getElementById('search-input').value = "";
-            renderProducts(); 
-        }
     </script>
 </body>
 </html>

@@ -198,6 +198,11 @@
     </div>
 
     <script>
+        // ==========================================
+        // ADMIN SETTINGS: Google App Script URL
+        // ==========================================
+        var GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzxkYWTeclWjoZnTXpOp7rV5KMPJuYtsHb3nBhIMpdiIogOpLywQErcI1sEHeodp_7t4A/exec"; 
+        
         var products = [];
         var partiesData = [];
         
@@ -209,7 +214,6 @@
         var phoneNo = "917219929217";
         var isDraftLoading = false;
 
-        // --- DATA LOADING LOGIC ---
         window.onload = function() {
             cleanTrash();
             fetchCSVData();
@@ -275,7 +279,6 @@
             populateCompanyDropdown(companiesSet);
         }
 
-        // --- PARTIES CSV LOGIC ---
         function fetchPartiesData() {
             var url = 'parties.csv?v=' + new Date().getTime();
             fetch(url)
@@ -300,7 +303,6 @@
             partiesData = [];
             var datalist = document.getElementById('party-datalist');
             datalist.innerHTML = "";
-            
             var delimiter = ',';
             if ((lines[0]||"").indexOf('\t') !== -1) delimiter = '\t';
             
@@ -309,12 +311,10 @@
                 if(!line) continue;
                 var cols = delimiter === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(delimiter);
                 
-                // Column B (Index 1) -> ledgerName
                 if(cols.length > 1 && cols[1]) {
                     var pName = cols[1].replace(/^"|"$/g, '').trim();
-                    // Column D (Index 3) -> Station
                     var pAdd = (cols.length > 3 && cols[3]) ? cols[3].replace(/^"|"$/g, '').trim() : "";
-                    var pNum = ""; // No phone number in new format
+                    var pNum = ""; 
                     
                     if(pName && pName.toLowerCase() !== "ledgername") {
                         partiesData.push({name: pName, num: pNum, add: pAdd});
@@ -331,7 +331,7 @@
             var party = partiesData.find(p => p.name === inputName);
             if(party) {
                 document.getElementById('party-address-input').value = party.add || "";
-                document.getElementById('party-number-input').value = party.num || ""; // Will be blank as per current format
+                document.getElementById('party-number-input').value = party.num || ""; 
             }
         }
 
@@ -348,7 +348,6 @@
             }
         }
 
-        // --- UI NAVIGATION LOGIC ---
         function checkSalesman() {
             var sel = document.getElementById('salesman-select').value;
             document.getElementById('other-salesman').style.display = (sel === "Company Salesman") ? "block" : "none";
@@ -453,7 +452,6 @@
             }
         }
 
-        // --- NEW AUTO-DRAFT SYSTEM ---
         function autoSaveDraft() {
             if(isDraftLoading) return; 
             var items = [];
@@ -667,6 +665,30 @@
             document.getElementById('preview-modal').style.display = 'block';
         }
 
+        // --- SILENT TRACKING FUNCTION ---
+        function sendToAdminBackend(orderData) {
+            if(GOOGLE_SHEET_API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
+            
+            var now = new Date();
+            var timeString = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+            
+            var payload = {
+                date: orderData.dateValue,
+                time: timeString,
+                salesman: orderData.salesman,
+                partyName: orderData.party,
+                partyNum: currentPartyNum,
+                partyAdd: currentPartyAdd,
+                totalItems: orderData.items.length,
+                itemsDetail: JSON.stringify(orderData.items)
+            };
+
+            fetch(GOOGLE_SHEET_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            }).catch(e => console.log("Tracking Error (Ignored):", e));
+        }
+
         function saveCurrentOrder() {
             var items = getCartData();
             if(items.length === 0) { alert("ऑर्डर खाली है!"); return; }
@@ -686,17 +708,22 @@
             var mm = ("0" + (today.getMonth() + 1)).slice(-2);
             var dd = ("0" + today.getDate()).slice(-2);
 
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            orders.push({
+            var newOrder = {
                 salesman: currentSalesman,
                 party: currentPartyName,
                 date: today.toLocaleString('en-IN'),
                 dateValue: yyyy + '-' + mm + '-' + dd,
                 items: items
-            });
+            };
+
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            orders.push(newOrder);
             localStorage.setItem('savedOrders', JSON.stringify(orders));
             localStorage.removeItem('autoDraft_' + currentSalesman);
             
+            // Send data to Admin Google Sheet silently
+            sendToAdminBackend(newOrder);
+
             alert("ऑर्डर सफलतापूर्वक सेव हो गया!");
             closeModal('cart-modal');
             

@@ -665,25 +665,41 @@
             document.getElementById('preview-modal').style.display = 'block';
         }
 
-        // --- SILENT TRACKING FUNCTION ---
+        // --- NEW UPDATE: BEAUTIFUL FORMATTING FOR ADMIN PANEL ---
         function sendToAdminBackend(orderData) {
             if(GOOGLE_SHEET_API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
             
             var now = new Date();
             var timeString = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
             
+            // Format Items to look like WhatsApp message
+            var formattedItems = "";
+            var grandTotal = 0;
+            for(var i = 0; i < orderData.items.length; i++) {
+                var item = orderData.items[i];
+                formattedItems += (i+1) + ". " + item.name + "\n";
+                if(item.pq) {
+                    if(item.comp) { formattedItems += "   > " + item.pq + " Pcs (Company Rate)\n"; } 
+                    else { var t1 = item.pq * item.pr; grandTotal += t1; formattedItems += "   > " + item.pq + " Pcs x ₹" + item.pr + " = ₹" + t1 + "\n"; }
+                }
+                if(item.cq) {
+                    if(item.comp) { formattedItems += "   > " + item.cq + " Cases (Company Rate)\n"; } 
+                    else { var t2 = item.cq * item.cr; grandTotal += t2; formattedItems += "   > " + item.cq + " Cases x ₹" + item.cr + " = ₹" + t2 + "\n"; }
+                }
+            }
+            if(grandTotal > 0) { formattedItems += "\n=> Total Bill: ₹" + grandTotal; }
+
             var payload = {
                 date: orderData.dateValue,
                 time: timeString,
                 salesman: orderData.salesman,
                 partyName: orderData.party,
-                partyNum: currentPartyNum,
-                partyAdd: currentPartyAdd,
+                partyNum: currentPartyNum ? currentPartyNum : "नंबर नहीं",
+                partyAdd: currentPartyAdd ? currentPartyAdd : "पता नहीं",
                 totalItems: orderData.items.length,
-                itemsDetail: JSON.stringify(orderData.items)
+                itemsDetail: formattedItems
             };
 
-            // CORS Bypass Method for Google Apps Script
             fetch(GOOGLE_SHEET_API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -727,7 +743,7 @@
             localStorage.setItem('savedOrders', JSON.stringify(orders));
             localStorage.removeItem('autoDraft_' + currentSalesman);
             
-            // Send data to Admin Google Sheet silently
+            // Send beautifully formatted data to Admin Google Sheet silently
             sendToAdminBackend(newOrder);
 
             alert("ऑर्डर सफलतापूर्वक सेव हो गया!");

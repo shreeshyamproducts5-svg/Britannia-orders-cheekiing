@@ -7,7 +7,7 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 0; background-color: #f5f5f5; }
         header { background-color: #d32f2f; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
-        .container { padding: 15px; padding-bottom: 80px; }
+        .container { padding: 15px; padding-bottom: 110px; /* Increased padding for bigger bottom bar */ }
         
         /* Screens */
         #login-screen, #party-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: white; }
@@ -34,13 +34,15 @@
         .item-total { color: red; font-weight: bold; margin-top: 10px; text-align: right; }
         .company-rate-box { margin-top: 10px; font-size: 14px; }
         
-        /* Floating Bottom Bar */
-        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; gap: 8px; box-sizing: border-box; }
-        .bottom-bar button { flex: 1; font-size: 14px; padding: 12px 5px; margin: 0; }
+        /* Floating Bottom Bar (2x2 Grid Layout) */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; box-sizing: border-box; z-index: 105; }
+        .bottom-bar button { font-size: 14px; padding: 12px 5px; margin: 0; border-radius: 5px; }
         
-        .btn-view { background-color: #d32f2f; color: white; padding: 12px; }
-        .btn-saved { background-color: #1976d2; color: white; padding: 12px; }
-        .btn-draft { background-color: #e67e22; color: white; padding: 12px; }
+        .btn-draft { background-color: #e67e22; color: white; }
+        .btn-saved { background-color: #1976d2; color: white; }
+        .btn-view { background-color: #d32f2f; color: white; }
+        .btn-save-direct { background-color: #27ae60; color: white; border: 2px solid #1e8449; } /* Main Save Button */
+        
         .btn-clear { background-color: #7f8c8d; color: white; padding: 12px; margin-top: 10px; }
         .btn-trash { background-color: #c0392b; color: white; padding: 12px; margin-top: 10px; }
         .btn-start { background-color: #fbc02d; color: #b71c1c; padding: 12px; margin-top:10px; }
@@ -90,7 +92,6 @@
             <h2 style="color:#d32f2f;">पार्टी की जानकारी</h2>
             <p style="font-size:12px; color:gray; text-align:left; margin-bottom:5px;">पार्टी का नाम सर्च करें या नया लिखें:</p>
             
-            <!-- Custom Search Field -->
             <div class="autocomplete-wrapper">
                 <input type="text" id="party-name-input" placeholder="पार्टी का नाम सर्च करें..." autocomplete="off" onkeyup="filterCustomParties()" onfocus="filterCustomParties()">
                 <div id="custom-party-list" class="autocomplete-list"></div>
@@ -122,24 +123,26 @@
             <div id="product-list"></div>
         </div>
 
+        <!-- NEW 2x2 BOTTOM BAR -->
         <div class="bottom-bar">
-            <button class="btn-draft" onclick="openDraftsModal()">Drafts</button>
+            <button class="btn-draft" onclick="openDraftsModal()">Drafts (अधूरे)</button>
             <button class="btn-saved" onclick="openSavedOrders()">Saved Orders</button>
-            <button class="btn-view" onclick="openCart()">View Cart</button>
+            <button class="btn-view" onclick="openCart()">View Cart (कार्ट)</button>
+            <button class="btn-save-direct" onclick="saveCurrentOrder()">Save Order</button>
         </div>
     </div>
 
     <!-- Cart Modal -->
     <div id="cart-modal" class="modal">
         <div class="modal-header">
-            <h3 style="margin:0;">Order Details</h3>
+            <h3 style="margin:0;">View Cart (ऑर्डर डिटेल्स)</h3>
             <button class="close-btn" onclick="closeModal('cart-modal')">✖</button>
         </div>
         <div class="modal-body">
             <div id="cart-party-info" style="background:#f9f9f9; padding:10px; border-radius:5px; margin-bottom:15px; font-size:14px; border:1px solid #ddd;"></div>
-            <button class="btn-view" onclick="saveCurrentOrder()" style="margin-bottom: 10px;">1. Save Order (ऑर्डर सेव करें)</button>
-            <button class="btn-whatsapp" onclick="showPreview()" style="margin-bottom: 10px;">2. Preview & WhatsApp</button>
-            <button class="btn-trash" onclick="clearCartWithConfirmation()" style="margin-bottom: 10px;">3. Cancel Order (कार्ट/ड्राफ्ट खाली करें)</button>
+            <button class="btn-whatsapp" onclick="showPreview()" style="margin-bottom: 10px; padding:12px;">1. Preview & WhatsApp</button>
+            <button class="btn-save-direct" onclick="saveCurrentOrder()" style="margin-bottom: 10px; padding:12px;">2. Confirm & Save Order</button>
+            <button class="btn-trash" onclick="clearCartWithConfirmation()" style="margin-bottom: 10px; padding:12px;">3. Cancel Order (कार्ट खाली करें)</button>
         </div>
     </div>
 
@@ -239,7 +242,7 @@
         });
 
         function fetchCSVData() {
-            var url = 'stock.csv?v=' + new Date().getTime();
+            var url = 'stock.csv?v=' + new Date().getTime(); // ?v= prevents cache logic for CSV, but HTML is cached by browser!
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error("stock.csv फाइल नहीं मिली।");
@@ -339,7 +342,6 @@
             }
         }
 
-        // --- NEW CUSTOM AUTOCOMPLETE LOGIC ---
         function filterCustomParties() {
             var inputVal = document.getElementById('party-name-input').value.toLowerCase();
             var listDiv = document.getElementById('custom-party-list');
@@ -702,6 +704,7 @@
             document.getElementById('preview-modal').style.display = 'block';
         }
 
+        // --- NEW UPDATE: BEAUTIFUL FORMATTING FOR ADMIN PANEL ---
         function sendToAdminBackend(orderData) {
             if(GOOGLE_SHEET_API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
             
@@ -749,7 +752,7 @@
 
         function saveCurrentOrder() {
             var items = getCartData();
-            if(items.length === 0) { alert("ऑर्डर खाली है!"); return; }
+            if(items.length === 0) { alert("ऑर्डर खाली है! कृपया पहले कोई आइटम चुनें।"); return; }
 
             for(var j = 0; j < items.length; j++) {
                 var prodIndex = products.findIndex(p => p.name === items[j].name);

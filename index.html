@@ -7,7 +7,7 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 0; background-color: #f5f5f5; }
         header { background-color: #d32f2f; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
-        .container { padding: 15px; padding-bottom: 110px; /* Increased padding for bigger bottom bar */ }
+        .container { padding: 15px; padding-bottom: 110px; }
         
         /* Screens */
         #login-screen, #party-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: white; }
@@ -34,14 +34,14 @@
         .item-total { color: red; font-weight: bold; margin-top: 10px; text-align: right; }
         .company-rate-box { margin-top: 10px; font-size: 14px; }
         
-        /* Floating Bottom Bar (2x2 Grid Layout) */
+        /* Floating Bottom Bar */
         .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; box-sizing: border-box; z-index: 105; }
         .bottom-bar button { font-size: 14px; padding: 12px 5px; margin: 0; border-radius: 5px; }
         
         .btn-draft { background-color: #e67e22; color: white; }
         .btn-saved { background-color: #1976d2; color: white; }
         .btn-view { background-color: #d32f2f; color: white; }
-        .btn-save-direct { background-color: #27ae60; color: white; border: 2px solid #1e8449; } /* Main Save Button */
+        .btn-save-direct { background-color: #27ae60; color: white; border: 2px solid #1e8449; }
         
         .btn-clear { background-color: #7f8c8d; color: white; padding: 12px; margin-top: 10px; }
         .btn-trash { background-color: #c0392b; color: white; padding: 12px; margin-top: 10px; }
@@ -123,7 +123,7 @@
             <div id="product-list"></div>
         </div>
 
-        <!-- NEW 2x2 BOTTOM BAR -->
+        <!-- 2x2 BOTTOM BAR -->
         <div class="bottom-bar">
             <button class="btn-draft" onclick="openDraftsModal()">Drafts (अधूरे)</button>
             <button class="btn-saved" onclick="openSavedOrders()">Saved Orders</button>
@@ -242,7 +242,7 @@
         });
 
         function fetchCSVData() {
-            var url = 'stock.csv?v=' + new Date().getTime(); // ?v= prevents cache logic for CSV, but HTML is cached by browser!
+            var url = 'stock.csv?v=' + new Date().getTime(); 
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error("stock.csv फाइल नहीं मिली।");
@@ -704,14 +704,12 @@
             document.getElementById('preview-modal').style.display = 'block';
         }
 
-        // --- NEW UPDATE: BEAUTIFUL FORMATTING FOR ADMIN PANEL ---
         function sendToAdminBackend(orderData) {
             if(GOOGLE_SHEET_API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
             
             var now = new Date();
             var timeString = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
             
-            // Format Items to look like WhatsApp message
             var formattedItems = "";
             var grandTotal = 0;
             for(var i = 0; i < orderData.items.length; i++) {
@@ -733,8 +731,8 @@
                 time: timeString,
                 salesman: orderData.salesman,
                 partyName: orderData.party,
-                partyNum: currentPartyNum ? currentPartyNum : "नंबर नहीं",
-                partyAdd: currentPartyAdd ? currentPartyAdd : "पता नहीं",
+                partyNum: orderData.partyNum ? orderData.partyNum : "नंबर नहीं",
+                partyAdd: orderData.partyAdd ? orderData.partyAdd : "पता नहीं",
                 totalItems: orderData.items.length,
                 itemsDetail: formattedItems
             };
@@ -746,8 +744,7 @@
                     'Content-Type': 'text/plain;charset=utf-8'
                 },
                 body: JSON.stringify(payload)
-            }).then(() => console.log("Order Tracking Sent"))
-              .catch(e => console.log("Tracking Error:", e));
+            }).catch(e => console.log("Tracking Error:", e));
         }
 
         function saveCurrentOrder() {
@@ -772,6 +769,8 @@
             var newOrder = {
                 salesman: currentSalesman,
                 party: currentPartyName,
+                partyNum: currentPartyNum,
+                partyAdd: currentPartyAdd,
                 date: today.toLocaleString('en-IN'),
                 dateValue: yyyy + '-' + mm + '-' + dd,
                 items: items
@@ -803,6 +802,62 @@
                     document.getElementById('total-'+i).innerText = "Total: ₹0";
                 }
             }
+        }
+
+        // --- NEW EDIT ORDER FEATURE ---
+        function editSavedOrder(idx) {
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            var orderToEdit = orders[idx];
+
+            if(!confirm("क्या आप इस ऑर्डर में बदलाव करना चाहते हैं? यह वापस आपके कार्ट में खुल जाएगा।")) return;
+
+            // 1. Restore Stock in memory (so they don't get 'Stock Full' error)
+            for(var j=0; j<orderToEdit.items.length; j++) {
+                var item = orderToEdit.items[j];
+                var prodIndex = products.findIndex(p => p.name === item.name);
+                if(prodIndex !== -1) {
+                     var packSize = parseInt(products[prodIndex].pack) || 1;
+                     var reqP = parseFloat(item.pq) || 0;
+                     var reqC = parseFloat(item.cq) || 0;
+                     products[prodIndex].currentStock += (reqP + (reqC * packSize));
+                }
+            }
+
+            // 2. Re-render products to update stock badges
+            renderProducts();
+
+            // 3. Clear existing inputs & Load new ones
+            for(var j=0; j<orderToEdit.items.length; j++) {
+                var item = orderToEdit.items[j];
+                var prodIndex = products.findIndex(p => p.name === item.name);
+                if(prodIndex !== -1) {
+                     document.getElementById('p-qty-'+prodIndex).value = item.pq || "";
+                     document.getElementById('p-rate-'+prodIndex).value = item.pr || "";
+                     document.getElementById('c-qty-'+prodIndex).value = item.cq || "";
+                     document.getElementById('c-rate-'+prodIndex).value = item.cr || "";
+                     document.getElementById('comp-rate-'+prodIndex).checked = item.comp || false;
+                     calcTotal(prodIndex, true); 
+                }
+            }
+
+            // 4. Load Party Info
+            currentPartyName = orderToEdit.party || "";
+            currentPartyNum = orderToEdit.partyNum || "";
+            currentPartyAdd = orderToEdit.partyAdd || "";
+            
+            document.getElementById('party-name-input').value = currentPartyName;
+            document.getElementById('party-number-input').value = currentPartyNum;
+            document.getElementById('party-address-input').value = currentPartyAdd;
+
+            document.getElementById('active-salesman').innerHTML = "<b>सेल्समैन:</b> " + currentSalesman + "<br><b>पार्टी:</b> <span style='color:#ffeb3b;'>" + currentPartyName + "</span>";
+
+            // 5. Remove from saved orders so it's not duplicated
+            orders.splice(idx, 1);
+            localStorage.setItem('savedOrders', JSON.stringify(orders));
+
+            // 6. Close Modal
+            closeModal('saved-orders-modal');
+            alert("ऑर्डर वापस खुल गया है। अब आप आइटम कम-ज्यादा करके स्क्रीन से ही दोबारा 'Save Order' कर सकते हैं!");
         }
 
         function clearCartWithConfirmation() {
@@ -864,6 +919,12 @@
                     }
                     html += '</div>';
                     if(grandTotal > 0) { html += '<div class="grand-total">Total Bill: ₹' + grandTotal + '</div>'; }
+                    
+                    // EDIT BUTTON ADDED HERE
+                    html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px; text-align:right;">';
+                    html += '<button onclick="editSavedOrder(' + k + ')" style="padding:8px 15px; font-size:13px; background:#f39c12; color:white; border:none; border-radius:4px; cursor:pointer;">✏️️ Edit Order (बदलाव करें)</button>';
+                    html += '</div>';
+
                     html += '</div>';
                     list.innerHTML += html;
                 }

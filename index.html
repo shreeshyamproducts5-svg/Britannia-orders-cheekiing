@@ -3,177 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Collection App</title>
+    <title>श्री श्याम प्रोडक्ट्स</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background-color: #f5f5f5; }
-        header { background-color: #d32f2f; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
-        .container { padding: 15px; padding-bottom: 110px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f0f2f5; }
         
-        /* Screens */
-        #login-screen, #party-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: white; }
-        .login-box { padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
-        select, input[type="text"], input[type="number"], input[type="date"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size:14px; }
-        button { border: none; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; }
+        /* Branding & Logo */
+        .brand-logo-container { text-align: center; padding: 20px 10px 10px 10px; background: #b71c1c; color: white; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .brand-icon { font-size: 40px; line-height: 1; }
+        .brand-name { font-size: 22px; font-weight: bold; margin-top: 5px; letter-spacing: 1px; }
         
-        /* Custom Autocomplete Dropdown */
+        header { background-color: #d32f2f; color: white; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .menu-btn { font-size: 24px; cursor: pointer; background: none; border: none; color: white; padding: 0; margin-right: 15px; }
+        
+        /* Sidebar */
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2001; top: 0; left: 0; background-color: #fff; overflow-x: hidden; transition: 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        .sidebar-header { background: #b71c1c; color: white; padding: 20px; font-size: 18px; font-weight: bold; }
+        .sidebar a { padding: 15px 20px; text-decoration: none; font-size: 16px; color: #333; display: block; border-bottom: 1px solid #f0f0f0; transition: 0.2s; }
+        .sidebar a:hover { background-color: #f9f9f9; color: #d32f2f; }
+        .close-sidebar { position: absolute; top: 10px; right: 15px; font-size: 30px; background: none; border: none; color: white; cursor: pointer; }
+        
+        /* Toast Notification */
+        #toast { visibility: hidden; min-width: 250px; background-color: #4CAF50; color: #fff; text-align: center; border-radius: 5px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); font-weight: bold; }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        .container { padding: 10px; padding-bottom: 80px; }
+        
+        /* App Layers (For Back Button History) */
+        .app-layer { display: none; min-height: 100vh; background: #f0f2f5; }
+        #login-layer { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background: white; }
+        
+        .login-box { padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; background: white; margin-top: 10px; }
+        select, input[type="text"], input[type="number"], input[type="date"], input[type="password"] { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size:14px; }
+        button { border: none; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; padding: 12px; }
+        .link-btn { background: none; border: none; color: #1976d2; font-size: 13px; font-weight: normal; margin-top: 10px; padding: 5px; cursor: pointer; text-decoration: underline; }
+
+        /* SMART ROUTE BOX (YELLOW) */
+        .smart-route-box { background-color: #fff9c4; border: 2px solid #fbc02d; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none; }
+        .smart-route-box h4 { margin: 0 0 5px 0; color: #d35400; font-size: 16px; display: flex; align-items: center; gap: 5px; }
+        .smart-route-list { margin: 0; padding-left: 20px; font-size: 13px; color: #333; max-height: 180px; overflow-y: auto; }
+        .smart-route-list li { margin-bottom: 6px; }
+        .smart-party-link { color: #1976d2; font-weight: bold; cursor: pointer; text-decoration: underline; }
+
+        /* Party Section */
+        .top-party-section { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .party-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
+        
+        /* Autocomplete */
         .autocomplete-wrapper { position: relative; width: 100%; }
         .autocomplete-list { position: absolute; background: white; border: 1px solid #ccc; width: 100%; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; border-radius: 0 0 5px 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: left; }
         .autocomplete-item { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; cursor: pointer; }
         .autocomplete-item:hover { background-color: #f0f0f0; color: #d32f2f; font-weight: bold; }
         
-        /* Main App */
-        #app-screen, #cart-modal, #preview-modal, #saved-orders-modal, #trash-modal, #drafts-modal { display: none; }
-        .search-bar { position: sticky; top: 75px; background: #f5f5f5; padding: 10px 0; z-index: 99; border-bottom: 1px solid #ddd; }
-        .product-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .product-title { font-size: 16px; font-weight: bold; color: #d32f2f; margin-bottom: 5px; line-height: 1.4; }
-        .packing-info { font-size: 13px; color: #333; font-weight: bold; background: #e0e0e0; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; line-height: 1.8; }
-        .stock-good { color: #1e824c; font-weight: bold; }
-        .stock-bad { color: #d32f2f; font-weight: bold; }
+        /* Search & Filters */
+        .search-bar { position: sticky; top: 55px; background: #f0f2f5; padding: 10px 0; z-index: 99; }
+        .stock-filters { display: flex; gap: 5px; margin-top: 5px; margin-bottom: 10px; }
+        .filter-btn { padding: 8px 5px; font-size: 12px; border-radius: 20px; background: #e0e0e0; color: #333; flex: 1; border: 1px solid #ccc; }
+        .filter-btn.active { background: #d32f2f; color: white; border-color: #b71c1c; }
+
+        /* Product Card */
+        .product-card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #d32f2f; }
+        .product-title { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 2px; }
+        .old-rate-badge { color: #e84393; font-size: 11px; font-weight: bold; background: #fce4ec; padding: 2px 6px; border-radius: 10px; display: inline-block; margin-bottom: 5px; }
+        .packing-info { font-size: 12px; color: #555; background: #f9f9f9; padding: 6px; border-radius: 4px; display: block; margin-top: 5px; border: 1px solid #eee; }
+        .highlight-mrp { color: #e67e22; font-weight: bold; }
+        .stock-good { color: #27ae60; font-weight: bold; }
+        .stock-bad { color: #c0392b; font-weight: bold; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .input-group label { font-size: 12px; color: #555; }
-        .item-total { color: red; font-weight: bold; margin-top: 10px; text-align: right; }
-        .company-rate-box { margin-top: 10px; font-size: 14px; }
+        .input-group label { font-size: 11px; color: #777; font-weight: bold; }
+        .item-total { color: #d32f2f; font-weight: bold; margin-top: 10px; text-align: right; font-size: 15px; }
         
-        /* Floating Bottom Bar */
-        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; box-sizing: border-box; z-index: 105; }
-        .bottom-bar button { font-size: 14px; padding: 12px 5px; margin: 0; border-radius: 5px; }
-        
+        /* Bottom Bar */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; box-sizing: border-box; z-index: 105; }
+        .btn-view { background-color: #34495e; color: white; }
+        .btn-save-direct { background-color: #27ae60; color: white; }
         .btn-draft { background-color: #e67e22; color: white; }
         .btn-saved { background-color: #1976d2; color: white; }
-        .btn-view { background-color: #d32f2f; color: white; }
-        .btn-save-direct { background-color: #27ae60; color: white; border: 2px solid #1e8449; }
-        
-        .btn-clear { background-color: #7f8c8d; color: white; padding: 12px; margin-top: 10px; }
-        .btn-trash { background-color: #c0392b; color: white; padding: 12px; margin-top: 10px; }
-        .btn-start { background-color: #fbc02d; color: #b71c1c; padding: 12px; margin-top:10px; }
-        .btn-group { background-color: #128C7E; color: white; padding: 12px; margin-top: 10px; }
-        .btn-whatsapp { background-color: #25D366; color: white; padding: 12px; }
+        .btn-clear { background-color: #7f8c8d; color: white; margin-top: 10px; }
+        .btn-trash { background-color: #c0392b; color: white; margin-top: 10px; }
+        .btn-start { background-color: #d32f2f; color: white; }
+        .btn-whatsapp { background-color: #25D366; color: white; }
 
         /* Modals */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 200; overflow-y: auto; padding-bottom: 20px; }
-        .modal-header { background: #d32f2f; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { background: none; border: none; color: white; font-size: 20px; width: auto; padding: 0; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 2000; display: none; overflow-y: auto; padding-bottom: 20px; }
+        .modal-header { background: #d32f2f; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+        .close-btn { background: none; border: none; color: white; font-size: 24px; width: auto; padding: 0; }
         .modal-body { padding: 15px; }
-        .preview-box { border: 1px solid #ccc; background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-family: monospace; white-space: pre-wrap; font-size: 13px; }
-        .saved-order-card { border: 1px solid #ccc; padding: 12px; margin-bottom: 15px; border-radius: 5px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .order-details-box { background: #f9f9f9; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 13px; }
-        .grand-total { color: #d32f2f; font-size: 16px; font-weight: bold; margin-top: 10px; text-align: right; border-top: 1px solid #ddd; padding-top: 5px;}
         
-        .filter-section { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
-        .order-cb { width: 22px; height: 22px; cursor: pointer; margin: 0; }
-        .order-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .dash-card-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .dash-card { background: white; padding: 15px; border-radius: 8px; text-align: center; border-top: 3px solid #d32f2f; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
-    <!-- 1. Salesman Selection Screen -->
-    <div id="login-screen">
-        <div class="login-box">
-            <h2>सेल्समैन चुनें</h2>
-            <select id="salesman-select" onchange="checkSalesman()">
-                <option value="">-- नाम चुनें --</option>
-                <option value="सुरेंद्र">सुरेंद्र</option>
-                <option value="घनश्याम">घनश्याम</option>
-                <option value="गौतम">गौतम</option>
-                <option value="वीरेंद्र">वीरेंद्र</option>
-                <option value="जुगल किशोर">जुगल किशोर</option>
-                <option value="Company Salesman">Company Salesman (अन्य)</option>
-            </select>
-            <input type="text" id="other-salesman" placeholder="सेल्समैन का नाम लिखें..." style="display: none;">
-            <button class="btn-start" onclick="goToPartyScreen()">Next (आगे बढ़ें)</button>
-            <div id="loading-msg" style="color: blue; margin-top: 15px; font-size: 14px; font-weight: bold;">स्टॉक लिस्ट लोड हो रही है...</div>
-            <div id="party-loading-msg" style="color: gray; margin-top: 5px; font-size: 12px;">पार्टियों की लिस्ट लोड हो रही है...</div>
-        </div>
+    <!-- Toast Notification -->
+    <div id="toast">✅ Order Saved Successfully!</div>
+
+    <!-- Sidebar Menu -->
+    <div id="mySidebar" class="sidebar">
+        <div class="sidebar-header">मेनू (Menu)<button class="close-sidebar" onclick="closeNav()">×</button></div>
+        <a href="#" onclick="openModal('dashboard-modal'); closeNav();">📊 Dashboard (रिपोर्ट्स)</a>
+        <a href="#" onclick="openModal('saved-orders-modal'); closeNav();">💾 Saved Orders (सेव ऑर्डर्स)</a>
+        <a href="#" onclick="openModal('drafts-modal'); closeNav();">📝 Drafts (अधूरे ऑर्डर्स)</a>
+        <a href="#" onclick="openModal('trash-modal'); closeNav();">🗑️ Trash (डिलीट ऑर्डर्स)</a>
+        <a href="#" onclick="logout(); closeNav();" style="color: #c0392b; margin-top: auto; border-top: 2px solid #eee;">🚪 Logout (लॉगआउट)</a>
     </div>
 
-    <!-- 2. Party Selection Screen -->
-    <div id="party-screen" style="display:none;">
-        <div class="login-box">
-            <h2 style="color:#d32f2f;">पार्टी की जानकारी</h2>
-            <p style="font-size:12px; color:gray; text-align:left; margin-bottom:5px;">पार्टी का नाम सर्च करें या नया लिखें:</p>
+    <!-- ================= LAYER 1: LOGIN ================= -->
+    <div id="login-layer" class="app-layer">
+        <div class="brand-logo-container" style="width: 100%; max-width: 400px; box-sizing: border-box;">
+            <div class="brand-icon">🌾</div>
+            <div class="brand-name">श्री श्याम प्रोडक्ट्स</div>
+        </div>
+
+        <div class="login-box" id="auth-box-login">
+            <h2 style="color: #d32f2f; margin-bottom: 5px;">लॉगिन (Login)</h2>
+            <p style="font-size: 12px; color: gray; margin-top: 0;">अपना रजिस्टर्ड मोबाइल नंबर डालें</p>
             
-            <div class="autocomplete-wrapper">
-                <input type="text" id="party-name-input" placeholder="पार्टी का नाम सर्च करें..." autocomplete="off" onkeyup="filterCustomParties()" onfocus="filterCustomParties()">
-                <div id="custom-party-list" class="autocomplete-list"></div>
+            <input type="number" id="login-mobile" placeholder="📱 मोबाइल नंबर डालें">
+            <input type="password" id="login-password" placeholder="🔒 पासवर्ड">
+            
+            <button class="btn-start" onclick="loginApp()" style="margin-top: 15px;">Login (लॉगिन करें)</button>
+            <button class="link-btn" onclick="showRegisterForm()">नया सेल्समैन? यहाँ रजिस्टर करें</button>
+            <br>
+            <button class="link-btn" onclick="showForgotForm()" style="color:#e67e22;">पासवर्ड भूल गए? (Forgot Password)</button>
+            
+            <div id="loading-msg" style="color: blue; margin-top: 15px; font-size: 13px; font-weight: bold;">डेटा लोड हो रहा है...</div>
+            <div id="party-loading-msg" style="color: gray; margin-top: 5px; font-size: 11px;">पार्टियों की लिस्ट आ रही है...</div>
+        </div>
+
+        <!-- Register Box -->
+        <div class="login-box" id="auth-box-register" style="display:none;">
+            <h2 style="color: #d32f2f;">रजिस्टर (नया अकाउंट)</h2>
+            <input type="text" id="reg-name" placeholder="👤 सेल्समैन का पूरा नाम">
+            <input type="number" id="reg-mobile" placeholder="📱 मोबाइल नंबर (यही लॉगिन ID होगी)">
+            <input type="password" id="reg-password" placeholder="🔒 नया पासवर्ड बनाएं">
+            <button class="btn-start" onclick="registerSalesman()" style="background:#27ae60; margin-top: 10px;">Create Account</button>
+            <button class="link-btn" onclick="showLoginForm()">पहले से अकाउंट है? लॉगिन करें</button>
+        </div>
+
+        <!-- Forgot Password Box -->
+        <div class="login-box" id="auth-box-forgot" style="display:none;">
+            <h2 style="color: #e67e22;">पासवर्ड रिसेट</h2>
+            <div id="forgot-step-1">
+                <input type="number" id="forgot-mobile" placeholder="📱 अपना रजिस्टर्ड मोबाइल नंबर डालें">
+                <button class="btn-start" onclick="sendOTP()" style="background:#e67e22; margin-top: 10px;">Send OTP</button>
             </div>
-            
-            <input type="number" id="party-number-input" placeholder="मोबाइल नंबर (ऑप्शनल)">
-            <input type="text" id="party-address-input" placeholder="पता / Station (ऑप्शनल)">
-            
-            <button class="btn-start" onclick="startApp()">Start Order (आइटम्स चुनें)</button>
-            <button class="btn-clear" onclick="backToLogin()">Back (वापस जाएँ)</button>
+            <div id="forgot-step-2" style="display:none;">
+                <p style="font-size:12px; color:green;">OTP आपके नंबर पर भेज दिया गया है (पॉप-अप चेक करें)</p>
+                <input type="number" id="forgot-otp" placeholder="Enter OTP">
+                <input type="password" id="forgot-new-pwd" placeholder="🔒 नया पासवर्ड बनाएं">
+                <button class="btn-start" onclick="verifyOTPAndReset()" style="background:#27ae60; margin-top: 10px;">Reset Password</button>
+            </div>
+            <button class="link-btn" onclick="showLoginForm()">Back to Login (वापस जाएं)</button>
         </div>
     </div>
 
-    <!-- 3. Main App Screen -->
-    <div id="app-screen">
+    <!-- ================= LAYER 2: PARTY SELECTION ================= -->
+    <div id="party-layer" class="app-layer">
         <header>
-            <h3 style="margin:0;">Order Collection</h3>
-            <div id="active-salesman" style="font-size:14px; margin-top:5px;"></div>
-            <div style="font-size:12px; margin-top:5px; background:rgba(255,255,255,0.2); padding:3px; border-radius:4px; display:inline-block; cursor:pointer;" onclick="backToPartyScreen()">✏️ चेंज पार्टी</div>
+            <div class="brand-name" style="font-size:18px;">🌾 श्री श्याम प्रोडक्ट्स</div>
+        </header>
+        <div style="display:flex; flex-direction:column; align-items:center; padding-top:20px; min-height:calc(100vh - 60px);">
+            
+            <div class="login-box" style="margin-top:0;">
+                
+                <!-- SMART ROUTE / VISITS ALERTS -->
+                <div id="smart-route-box" class="smart-route-box"></div>
+
+                <h2 style="color:#d32f2f; margin-top:0;">पार्टी चुनें</h2>
+                <p style="font-size:12px; color:gray; text-align:left; margin-bottom:5px;">पार्टी का नाम सर्च करें या नया लिखें:</p>
+                
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="start-party-name" placeholder="पार्टी का नाम सर्च करें..." autocomplete="off" onkeyup="filterStartParty()" onfocus="filterStartParty()">
+                    <div id="start-party-list" class="autocomplete-list"></div>
+                </div>
+                <input type="number" id="start-party-number" placeholder="मोबाइल नंबर (ऑप्शनल)">
+                <input type="text" id="start-party-address" placeholder="पता / Station (ऑप्शनल)">
+                <button class="btn-start" onclick="startOrderProcess()" style="margin-top:15px;">Start Order 🛒</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= LAYER 3: MAIN APP (ITEMS) ================= -->
+    <div id="main-layer" class="app-layer">
+        <header>
+            <button class="menu-btn" onclick="openNav()">☰</button>
+            <div class="header-title" id="header-salesman-name">Order App</div>
+            <div class="brand-icon" style="font-size:24px;">🌾</div>
         </header>
         
         <div class="container">
-            <div class="search-bar">
-                <select id="company-select" onchange="filterProducts()" style="margin-top: 0; margin-bottom: 10px;">
-                    <option value="All">-- सभी कंपनियाँ (All Companies) --</option>
-                </select>
-                <input type="text" id="search-input" placeholder="प्रोडक्ट सर्च करें..." onkeyup="filterProducts()">
+            <!-- Party Info at top -->
+            <div class="top-party-section">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="autocomplete-wrapper" style="width: 80%;">
+                        <label style="font-size: 11px; color: #777; font-weight: bold;">Party Name:</label>
+                        <input type="text" id="party-name-input" placeholder="पार्टी का नाम..." autocomplete="off" onkeyup="filterCustomParties()" onfocus="filterCustomParties()" style="margin-top: 2px; border-color:#d32f2f; font-weight:bold;">
+                        <div id="custom-party-list" class="autocomplete-list"></div>
+                    </div>
+                    <button style="width:15%; padding:10px; background:#f0f0f0; border:1px solid #ccc; color:#333; margin-top:15px;" onclick="goToPartyLayer()">🔄</button>
+                </div>
+                <div class="party-sub-grid">
+                    <div><input type="text" id="party-address-input" placeholder="स्टेशन/पता" oninput="autoSaveDraft()"></div>
+                    <div><input type="number" id="party-number-input" placeholder="मोबाइल नंबर" oninput="autoSaveDraft()"></div>
+                </div>
             </div>
+
+            <!-- Search & Stock Filters -->
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="🔍 प्रोडक्ट सर्च करें..." onkeyup="filterProducts()" style="margin:0;">
+                <div class="stock-filters">
+                    <button class="filter-btn active" id="f-all" onclick="setFilter('all')">सभी (All)</button>
+                    <button class="filter-btn" id="f-in" onclick="setFilter('in')">स्टॉक में</button>
+                    <button class="filter-btn" id="f-out" onclick="setFilter('out')">आउट ऑफ स्टॉक</button>
+                </div>
+            </div>
+            
             <div id="product-list"></div>
         </div>
 
-        <!-- 2x2 BOTTOM BAR -->
         <div class="bottom-bar">
-            <button class="btn-draft" onclick="openDraftsModal()">Drafts (अधूरे)</button>
-            <button class="btn-saved" onclick="openSavedOrders()">Saved Orders</button>
-            <button class="btn-view" onclick="openCart()">View Cart (कार्ट)</button>
-            <button class="btn-save-direct" onclick="saveCurrentOrder()">Save Order</button>
+            <button class="btn-view" onclick="openModal('cart-modal')">🛒 View Cart</button>
+            <button class="btn-save-direct" onclick="saveCurrentOrder()">✅ Save Order</button>
         </div>
     </div>
 
+    <!-- ================= MODALS ================= -->
     <!-- Cart Modal -->
     <div id="cart-modal" class="modal">
         <div class="modal-header">
-            <h3 style="margin:0;">View Cart (ऑर्डर डिटेल्स)</h3>
-            <button class="close-btn" onclick="closeModal('cart-modal')">✖</button>
+            <h3 style="margin:0;">View Cart</h3>
+            <button class="close-btn" onclick="goBackHistory()">✖</button>
         </div>
         <div class="modal-body">
-            <div id="cart-party-info" style="background:#f9f9f9; padding:10px; border-radius:5px; margin-bottom:15px; font-size:14px; border:1px solid #ddd;"></div>
-            <button class="btn-whatsapp" onclick="showPreview()" style="margin-bottom: 10px; padding:12px;">1. Preview & WhatsApp</button>
-            <button class="btn-save-direct" onclick="saveCurrentOrder()" style="margin-bottom: 10px; padding:12px;">2. Confirm & Save Order</button>
-            <button class="btn-trash" onclick="clearCartWithConfirmation()" style="margin-bottom: 10px; padding:12px;">3. Cancel Order (कार्ट खाली करें)</button>
+            <div id="cart-party-info" style="background:#fff; padding:15px; border-radius:8px; margin-bottom:15px; font-size:14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #1976d2;"></div>
+            <div id="cart-items-preview" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-family: monospace; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></div>
+            <button class="btn-save-direct" onclick="saveCurrentOrder()" style="margin-bottom: 10px;">✅ Confirm & Save Order</button>
+            <button class="btn-whatsapp" onclick="showPreview()" style="margin-bottom: 10px;">💬 Send to WhatsApp</button>
+            <button class="btn-trash" onclick="clearCartWithConfirmation()" style="background:#95a5a6;">🗑️ Clear Cart (नया बनाएं)</button>
         </div>
     </div>
 
-    <!-- Drafts Modal -->
-    <div id="drafts-modal" class="modal">
+    <!-- Dashboard Modal -->
+    <div id="dashboard-modal" class="modal">
         <div class="modal-header">
-            <h3 style="margin:0;">Draft (अधूरे ऑर्डर्स)</h3>
-            <button class="close-btn" onclick="closeModal('drafts-modal')">✖</button>
+            <h3 style="margin:0;">Sales Dashboard</h3>
+            <button class="close-btn" onclick="goBackHistory()">✖</button>
         </div>
         <div class="modal-body">
-            <p style="color:#e67e22; font-size:13px; font-weight:bold; background:#fef5e7; padding:8px; border-radius:5px;">ℹ️ ऐप बंद होने से पहले भरे गए अधूरे ऑर्डर।</p>
-            <div id="drafts-list"></div>
-        </div>
-    </div>
-
-    <!-- WhatsApp Preview Modal -->
-    <div id="preview-modal" class="modal">
-        <div class="modal-header">
-            <h3 style="margin:0;">WhatsApp Preview</h3>
-            <button class="close-btn" onclick="closeModal('preview-modal')">✖</button>
-        </div>
-        <div class="modal-body">
-            <div class="preview-box" id="preview-text"></div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <a id="wa-link-admin" href="#" target="_blank" style="text-decoration: none;">
-                    <button class="btn-whatsapp" onclick="closeModal('preview-modal'); closeModal('cart-modal');">1. Send to Admin (Direct)</button>
-                </a>
-                <a id="wa-link-group" href="#" target="_blank" style="text-decoration: none;">
-                    <button class="btn-group" onclick="closeModal('preview-modal'); closeModal('cart-modal');">2. Share in Group (ग्रुप में भेजें)</button>
-                </a>
+            <h4 style="margin-top:0; color:#333;" id="dash-salesman-name">Salesman</h4>
+            <div class="filter-section" style="display:flex; gap:10px; align-items:center;">
+                <input type="date" id="dash-date-filter" onchange="generateDashboard()" style="margin:0; padding:8px; flex:1;">
+                <button onclick="clearDashDate()" style="padding: 8px; width: auto; font-size: 13px; background: #7f8c8d; color: white;">All</button>
             </div>
+            <div class="dash-card-container">
+                <div class="dash-card"><div class="dash-title">Total Orders</div><div class="dash-value" id="dash-total-orders">0</div></div>
+                <div class="dash-card"><div class="dash-title">Total Sales (₹)</div><div class="dash-value" id="dash-total-sales" style="color:#27ae60;">0</div></div>
+            </div>
+            <h4 style="color:#d32f2f; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:5px;">Sales Analysis (Items Sold)</h4>
+            <div id="dash-analysis-list"></div>
         </div>
     </div>
 
@@ -181,30 +271,39 @@
     <div id="saved-orders-modal" class="modal">
         <div class="modal-header">
             <h3 style="margin:0;">Saved Orders</h3>
-            <button class="close-btn" onclick="closeModal('saved-orders-modal')">✖</button>
+            <button class="close-btn" onclick="goBackHistory()">✖</button>
         </div>
         <div class="modal-body">
-            <div class="filter-section">
-                <label style="font-size:14px; font-weight:bold; white-space:nowrap;">Date Filter:</label>
-                <input type="date" id="order-date-filter" onchange="renderSavedOrders()" style="margin:0; padding:8px;">
-                <button class="btn-clear" onclick="clearDateFilter()" style="margin:0; padding: 8px; width: auto; font-size: 14px;">All</button>
+            <div class="filter-section" style="display:flex; gap:10px; align-items:center;">
+                <input type="date" id="order-date-filter" onchange="renderSavedOrders()" style="margin:0; padding:8px; flex:1;">
+                <button class="btn-clear" onclick="clearSavedDateFilter()" style="margin:0; padding: 8px; width: auto; font-size: 14px;">All</button>
             </div>
             <div id="saved-orders-list"></div>
             <button class="btn-whatsapp" onclick="shareAllOrders('admin')" style="margin-top: 10px;">1. Share Selected to Admin</button>
-            <button class="btn-group" onclick="shareAllOrders('group')">2. Share Selected in Group</button>
             <button class="btn-trash" onclick="deleteSelectedOrders()">Delete Selected (ट्रैश में डालें)</button>
-            <button class="btn-clear" onclick="openTrash()" style="background-color:#555;">View Trash Bin</button>
         </div>
     </div>
 
-    <!-- Trash Bin Modal -->
-    <div id="trash-modal" class="modal">
+    <!-- Drafts Modal -->
+    <div id="drafts-modal" class="modal">
         <div class="modal-header">
-            <h3 style="margin:0;">Trash (डिलीट किए ऑर्डर्स)</h3>
-            <button class="close-btn" onclick="closeModal('trash-modal')">✖</button>
+            <h3 style="margin:0;">Drafts</h3>
+            <button class="close-btn" onclick="goBackHistory()">✖</button>
         </div>
         <div class="modal-body">
-            <p style="color:#d32f2f; font-size:13px; font-weight:bold; background:#f9e5e5; padding:8px; border-radius:5px;">⚠️ यहाँ मौजूद ऑर्डर्स 30 दिन बाद हमेशा के लिए डिलीट हो जाएंगे।</p>
+            <p style="color:#e67e22; font-size:13px; font-weight:bold;">ℹ️ ऐप बंद होने से पहले भरे गए अधूरे ऑर्डर।</p>
+            <div id="drafts-list"></div>
+        </div>
+    </div>
+
+    <!-- Trash Modal -->
+    <div id="trash-modal" class="modal">
+        <div class="modal-header">
+            <h3 style="margin:0;">Trash (डिलीट)</h3>
+            <button class="close-btn" onclick="goBackHistory()">✖</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#d32f2f; font-size:13px; font-weight:bold;">⚠️ 30 दिन बाद हमेशा के लिए डिलीट हो जाएंगे।</p>
             <div id="trash-orders-list"></div>
         </div>
     </div>
@@ -217,82 +316,249 @@
         
         var products = [];
         var partiesData = [];
+        var usersData = JSON.parse(localStorage.getItem('usersDB')) || {}; 
         
         var currentSalesman = "";
-        var currentPartyName = "";
-        var currentPartyNum = "";
-        var currentPartyAdd = "";
-        
+        var currentSalesmanMobile = "";
+        var currentStockFilter = "all"; 
         var phoneNo = "917219929217";
         var isDraftLoading = false;
+        var generatedOTP = "";
 
-        window.onload = function() {
-            cleanTrash();
-            fetchCSVData();
-            fetchPartiesData();
-        };
-
-        // --- HIDE DROPDOWN IF CLICKED OUTSIDE ---
-        document.addEventListener("click", function(event) {
-            var list = document.getElementById('custom-party-list');
-            var input = document.getElementById('party-name-input');
-            if (event.target !== input && event.target !== list) {
-                list.style.display = "none";
-            }
+        // --- BACK BUTTON (HISTORY API) LOGIC ---
+        window.addEventListener('popstate', function(event) {
+            closeAllModals(); 
+            if(event.state && event.state.layer) { showLayerSilent(event.state.layer); } 
+            else { showLayerSilent('login-layer'); }
         });
 
-        function fetchCSVData() {
-            var url = 'stock.csv?v=' + new Date().getTime(); 
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error("stock.csv फाइल नहीं मिली।");
-                    var lastMod = response.headers.get('Last-Modified');
-                    return response.text().then(text => ({ text: text, lastMod: lastMod }));
-                })
-                .then(data => {
-                    if(data.text.toLowerCase().indexOf("<!doctype html>") !== -1) {
-                         throw new Error("फाइल अभी तक GitHub पर लाइव नहीं हुई है। 2 मिनट रुकें।");
-                    }
-                    parseCSV(data.text);
-                    
-                    var dateText = "";
-                    if(data.lastMod) {
-                        var d = new Date(data.lastMod);
-                        dateText = "<br><span style='color:#555; font-size:12px; font-weight:normal;'>अंतिम अपडेट: " + d.toLocaleString('en-IN') + "</span>";
-                    } else {
-                        dateText = "<br><span style='color:#555; font-size:12px; font-weight:normal;'>अंतिम अपडेट: अभी चेक किया गया</span>";
-                    }
-                    
-                    document.getElementById('loading-msg').style.color = "green";
-                    document.getElementById('loading-msg').innerHTML = "✅ स्टॉक अपडेट हो गया (" + products.length + " आइटम्स)" + dateText;
-                })
-                .catch(error => {
-                    document.getElementById('loading-msg').style.color = "red";
-                    document.getElementById('loading-msg').innerText = "⚠️ एरर: " + error.message;
-                });
+        function navigateLayer(layerId) {
+            showLayerSilent(layerId);
+            history.pushState({layer: layerId}, '', '#' + layerId);
         }
 
-        function parseCSV(text) {
-            var lines = text.split(/\r?\n/);
-            products = [];
-            var companiesSet = {};
-            var headerLine = lines[0] || "";
-            var delimiter = ',';
-            if (headerLine.indexOf('\t') !== -1) delimiter = '\t';
-            else if (headerLine.indexOf(';') !== -1) delimiter = ';';
+        function showLayerSilent(layerId) {
+            document.querySelectorAll('.app-layer').forEach(el => el.style.display = 'none');
+            document.getElementById(layerId).style.display = (layerId === 'main-layer') ? 'block' : 'flex';
+        }
+
+        function openModal(modalId) {
+            if(modalId === 'cart-modal') buildCartPreview();
+            if(modalId === 'dashboard-modal') generateDashboard();
+            if(modalId === 'saved-orders-modal') renderSavedOrders();
+            if(modalId === 'drafts-modal') openDraftsLogic();
+            if(modalId === 'trash-modal') { cleanTrash(); renderTrash(); }
             
-            for (var i = 1; i < lines.length; i++) {
-                var line = lines[i].trim();
-                if (!line) continue;
-                var cols = delimiter === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(delimiter);
-                if (cols.length >= 2) {
-                    var desc = cols[0] ? cols[0].replace(/^"|"$/g, '').trim() : "";
+            document.getElementById(modalId).style.display = 'block';
+            history.pushState({modal: modalId, layer: 'main-layer'}, '', '#' + modalId);
+        }
+
+        function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+        function closeModal(modalId) { goBackHistory(); }
+        function goBackHistory() { history.back(); }
+
+        window.onload = function() {
+            history.replaceState({layer: 'login-layer'}, '', '#login');
+            showLayerSilent('login-layer');
+            cleanTrash(); 
+            fetchDualCSVData(); // Fetching 2 CSV files
+            fetchPartiesData();
+            
+            var today = new Date();
+            document.getElementById('dash-date-filter').value = today.getFullYear() + '-' + ("0" + (today.getMonth() + 1)).slice(-2) + '-' + ("0" + today.getDate()).slice(-2);
+        };
+
+        function showToast(msg) {
+            var x = document.getElementById("toast");
+            x.innerText = msg; x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        // --- Sidebar Logic ---
+        function openNav() { document.getElementById("mySidebar").style.width = "250px"; }
+        function closeNav() { document.getElementById("mySidebar").style.width = "0"; }
+
+        // --- AUTHENTICATION (Mobile + Pwd) ---
+        function showRegisterForm() { document.getElementById('auth-box-login').style.display='none'; document.getElementById('auth-box-register').style.display='block'; document.getElementById('auth-box-forgot').style.display='none'; }
+        function showLoginForm() { document.getElementById('auth-box-login').style.display='block'; document.getElementById('auth-box-register').style.display='none'; document.getElementById('auth-box-forgot').style.display='none'; }
+        function showForgotForm() { document.getElementById('auth-box-login').style.display='none'; document.getElementById('auth-box-register').style.display='none'; document.getElementById('auth-box-forgot').style.display='block'; document.getElementById('forgot-step-1').style.display='block'; document.getElementById('forgot-step-2').style.display='none'; }
+
+        function registerSalesman() {
+            var n = document.getElementById('reg-name').value.trim();
+            var m = document.getElementById('reg-mobile').value.trim();
+            var p = document.getElementById('reg-password').value.trim();
+            if(!n || !m || !p) { alert("सभी जानकारी भरें!"); return; }
+            if(usersData[m]) { alert("यह मोबाइल नंबर पहले से रजिस्टर है। कृपया लॉगिन करें।"); return; }
+            
+            usersData[m] = { name: n, pwd: p };
+            localStorage.setItem('usersDB', JSON.stringify(usersData));
+            alert("अकाउंट बन गया! अब लॉगिन करें।");
+            showLoginForm();
+            document.getElementById('login-mobile').value = m;
+        }
+
+        function loginApp() {
+            var m = document.getElementById('login-mobile').value.trim();
+            var p = document.getElementById('login-password').value.trim();
+            if(products.length === 0) { alert("स्टॉक लिस्ट लोड नहीं हुई है।"); return; }
+            if(!m || !p) { alert("मोबाइल और पासवर्ड डालें!"); return; }
+
+            if(!usersData[m]) { alert("अकाउंट नहीं मिला। कृपया 'नया सेल्समैन' पर क्लिक करके रजिस्टर करें।"); return; }
+            if(usersData[m].pwd !== p) { alert("गलत पासवर्ड!"); return; }
+
+            currentSalesmanMobile = m; currentSalesman = usersData[m].name;
+            
+            navigateLayer('party-layer');
+            generateDailyVisits(); 
+        }
+
+        function sendOTP() {
+            var m = document.getElementById('forgot-mobile').value.trim();
+            if(!usersData[m]) { alert("यह नंबर रजिस्टर नहीं है!"); return; }
+            generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+            alert("🔔 सिस्टम संदेश (SMS सिमुलेशन):\n\nश्री श्याम प्रोडक्ट्स पासवर्ड रिसेट OTP है: " + generatedOTP);
+            document.getElementById('forgot-step-1').style.display = 'none'; document.getElementById('forgot-step-2').style.display = 'block';
+        }
+
+        function verifyOTPAndReset() {
+            var m = document.getElementById('forgot-mobile').value.trim();
+            var otp = document.getElementById('forgot-otp').value.trim();
+            var np = document.getElementById('forgot-new-pwd').value.trim();
+            if(otp !== generatedOTP) { alert("गलत OTP!"); return; }
+            if(!np) { alert("नया पासवर्ड डालें!"); return; }
+            usersData[m].pwd = np; localStorage.setItem('usersDB', JSON.stringify(usersData));
+            alert("पासवर्ड सफलतापूर्वक बदल गया! अब लॉगिन करें।"); showLoginForm();
+        }
+
+        function logout() {
+            document.getElementById('login-password').value = ""; currentSalesman = ""; currentSalesmanMobile = ""; navigateLayer('login-layer');
+        }
+
+        // --- NEW SMART ROUTE / VISIT GENERATOR ---
+        function generateDailyVisits() {
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            var lastVisits = {};
+            orders.forEach(o => {
+                var orderDate = new Date(o.dateValue);
+                if(!lastVisits[o.party] || orderDate > lastVisits[o.party]) { lastVisits[o.party] = orderDate; }
+            });
+
+            var today = new Date(); var pendingParties = []; var stationCounts = {};
+
+            partiesData.forEach(p => {
+                var daysSince = 999;
+                if(lastVisits[p.name]) {
+                    var diffTime = Math.abs(today - lastVisits[p.name]);
+                    daysSince = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                }
+                if(daysSince >= 15) {
+                    var st = p.add || "Other";
+                    pendingParties.push({ name: p.name, add: st, days: daysSince });
+                    stationCounts[st] = (stationCounts[st] || 0) + 1;
+                }
+            });
+
+            var bestStation = ""; var maxCount = 0;
+            for(var st in stationCounts) { if(stationCounts[st] > maxCount && st !== "Other") { maxCount = stationCounts[st]; bestStation = st; } }
+            if(!bestStation && stationCounts["Other"]) bestStation = "Other";
+
+            var todayVisits = pendingParties.filter(p => p.add === bestStation).slice(0, 15);
+            if(todayVisits.length < 15) {
+                var others = pendingParties.filter(p => p.add !== bestStation).slice(0, 15 - todayVisits.length);
+                todayVisits = todayVisits.concat(others);
+            }
+
+            var alertBox = document.getElementById('smart-route-box');
+            if(todayVisits.length > 0) {
+                var html = "<h4>📍 आज का टारगेट (Smart Route)</h4>";
+                html += "<p style='font-size:12px; color:#555; margin:0 0 10px 0;'>रूट: <b>" + bestStation + "</b> (15 दिन+ से आर्डर नहीं)</p>";
+                html += "<ul class='smart-route-list'>";
+                todayVisits.forEach(v => {
+                    var dayStr = v.days === 999 ? "नया" : v.days + " दिन";
+                    html += "<li><span class='smart-party-link' onclick='selectSuggestedParty(\""+v.name.replace(/"/g, '&quot;')+"\", \""+v.add.replace(/"/g, '&quot;')+"\")'>" + v.name + "</span> <span style='color:#e67e22;'>(" + dayStr + ")</span></li>";
+                });
+                html += "</ul>";
+                alertBox.innerHTML = html; alertBox.style.display = "block";
+            } else { alertBox.style.display = "none"; }
+        }
+
+        function selectSuggestedParty(pName, pAdd) {
+            document.getElementById('start-party-name').value = pName;
+            document.getElementById('start-party-address').value = pAdd;
+            document.getElementById('start-party-number').value = "";
+            alert("पार्टी सेलेक्ट हो गई! अब 'Start Order' पर क्लिक करें।");
+        }
+
+        // --- FETCH DUAL CSV DATA (stock.csv + rates.csv) EXACTLY AS PER IMAGES ---
+        function fetchDualCSVData() {
+            var v = new Date().getTime();
+            Promise.all([
+                fetch('stock.csv?v=' + v).then(r => r.ok ? r.text() : Promise.reject("stock.csv नहीं मिली।")),
+                fetch('rates.csv?v=' + v).then(r => r.ok ? r.text() : "").catch(e => "")
+            ])
+            .then(data => {
+                var stockText = data[0];
+                var ratesText = data[1];
+                if(stockText.toLowerCase().indexOf("<!doctype html>") !== -1) throw new Error("GitHub फाइल प्रोसेस हो रही है...");
+                
+                parseDualCSV(stockText, ratesText);
+                
+                document.getElementById('loading-msg').style.color="green"; 
+                document.getElementById('loading-msg').innerHTML="✅ डेटा सिंक पूरा हुआ (" + products.length + " आइटम) <br><span style='font-size:11px;color:gray;'>Last: " + new Date().toLocaleTimeString('en-IN') + "</span>";
+            }).catch(e => { 
+                document.getElementById('loading-msg').style.color="red"; 
+                document.getElementById('loading-msg').innerText="⚠️ " + e; 
+            });
+        }
+
+        function parseDualCSV(stockText, ratesText) {
+            // 1. Build Map from rates.csv (Image 2: Col A=Name, Col B=Cost, Col C=MRP)
+            var ratesMap = {};
+            if(ratesText && ratesText.toLowerCase().indexOf("<!doctype html>") === -1) {
+                var rLines = ratesText.split(/\r?\n/);
+                var rDelim = (rLines[0] || "").indexOf('\t') !== -1 ? '\t' : ',';
+                for(var j=1; j<rLines.length; j++) {
+                    var line = rLines[j].trim(); if(!line) continue;
+                    var cols = rDelim === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(rDelim);
+                    if(cols.length >= 2) {
+                        var nameKey = cols[0] ? cols[0].replace(/^"|"$/g, '').trim().toLowerCase() : "";
+                        var costVal = cols[1] ? parseFloat(cols[1].replace(/[^0-9.-]/g, '')) || 0 : 0; // Col B
+                        var mrpVal = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "";           // Col C
+                        
+                        if(nameKey && nameKey !== "product" && nameKey !== "item name") {
+                            ratesMap[nameKey] = { mrp: mrpVal, cost: costVal };
+                        }
+                    }
+                }
+            }
+
+            // 2. Parse stock.csv and join data (Image 1: Col A=Name, B=Pack, C=Comp, D=Stock, E=Unit, F=Sale Rate)
+            var sLines = stockText.split(/\r?\n/); 
+            products = []; var companiesSet = {}; 
+            var sDelim = (sLines[0] || "").indexOf('\t') !== -1 ? '\t' : ',';
+            for (var i = 1; i < sLines.length; i++) {
+                var line = sLines[i].trim(); if (!line) continue; 
+                var cols = sDelim === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(sDelim);
+                if (cols.length >= 4) { // At least up to stock
+                    var desc = cols[0] ? cols[0].replace(/^"|"$/g, '').trim() : ""; 
                     var pack = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : "1";
-                    var comp = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "Company";
-                    var stockNum = (cols.length > 3 && cols[3]) ? parseFloat(cols[3].replace(/[^0-9.-]/g, '')) || 0 : 0;
-                    var sRate = (cols.length > 5 && cols[5]) ? cols[5].replace(/^"|"$/g, '').trim() : "0";
+                    var comp = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "Company"; 
+                    var stockNum = cols[3] ? parseFloat(cols[3].replace(/[^0-9.-]/g, '')) || 0 : 0; // Col D
+                    
+                    var sRate = "0";
+                    if(cols.length > 5 && cols[5]) {
+                        sRate = cols[5].replace(/^"|"$/g, '').trim(); // Col F (Sale Rate)
+                    }
+
                     if(desc && desc.toLowerCase() !== "description") {
-                        products.push({ name: desc, pack: pack, company: comp, saleRate: sRate, currentStock: stockNum });
+                        var lookupKey = desc.toLowerCase();
+                        var finalMrp = ratesMap[lookupKey] ? ratesMap[lookupKey].mrp : "";
+                        var finalCost = ratesMap[lookupKey] ? ratesMap[lookupKey].cost : 0;
+
+                        products.push({ 
+                            name: desc, pack: pack, company: comp, 
+                            mrp: finalMrp, saleRate: sRate, cost: finalCost, currentStock: stockNum 
+                        });
                         companiesSet[comp] = true;
                     }
                 }
@@ -300,776 +566,350 @@
             populateCompanyDropdown(companiesSet);
         }
 
+        // --- PARTIES PARSING ---
         function fetchPartiesData() {
-            var url = 'parties.csv?v=' + new Date().getTime();
-            fetch(url)
-                .then(res => {
-                    if(!res.ok) throw new Error("Skipping parties.");
-                    return res.text();
-                })
-                .then(text => {
-                    if(text.toLowerCase().indexOf("<!doctype html>") === -1) {
-                        parsePartiesCSV(text);
-                        document.getElementById('party-loading-msg').innerText = "✅ " + partiesData.length + " पार्टियां लोड हो गईं";
-                        document.getElementById('party-loading-msg').style.color = "green";
-                    }
-                })
-                .catch(e => {
-                    document.getElementById('party-loading-msg').innerText = "कोई parties.csv फाइल नहीं मिली (ऑप्शनल)";
-                });
+            fetch('parties.csv?v=' + new Date().getTime()).then(r => r.text()).then(t => {
+                if(t.toLowerCase().indexOf("<!doctype html>") === -1) { parsePartiesCSV(t); document.getElementById('party-loading-msg').innerText="✅ पार्टियां लोड हो गईं"; document.getElementById('party-loading-msg').style.color="green"; }
+            }).catch(e=>{});
         }
-
         function parsePartiesCSV(text) {
-            var lines = text.split(/\r?\n/);
-            partiesData = [];
-            var delimiter = ',';
-            if ((lines[0]||"").indexOf('\t') !== -1) delimiter = '\t';
-            
+            var lines = text.split(/\r?\n/); partiesData = []; var d = (lines[0]||"").indexOf('\t') !== -1 ? '\t' : ',';
             for(var i=1; i<lines.length; i++) { 
-                var line = lines[i].trim();
-                if(!line) continue;
-                var cols = delimiter === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(delimiter);
-                
+                var line = lines[i].trim(); if(!line) continue; var cols = d === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(d);
                 if(cols.length > 1 && cols[1]) {
-                    var pName = cols[1].replace(/^"|"$/g, '').trim();
-                    var pAdd = (cols.length > 3 && cols[3]) ? cols[3].replace(/^"|"$/g, '').trim() : "";
-                    var pNum = ""; 
-                    
-                    if(pName && pName.toLowerCase() !== "ledgername") {
-                        partiesData.push({name: pName, num: pNum, add: pAdd});
-                    }
+                    var pName = cols[1].replace(/^"|"$/g, '').trim(); var pAdd = (cols.length > 3 && cols[3]) ? cols[3].replace(/^"|"$/g, '').trim() : "";
+                    if(pName && pName.toLowerCase() !== "ledgername") partiesData.push({name: pName, num: "", add: pAdd});
                 }
             }
         }
 
-        function filterCustomParties() {
-            var inputVal = document.getElementById('party-name-input').value.toLowerCase();
-            var listDiv = document.getElementById('custom-party-list');
-            listDiv.innerHTML = "";
-            
-            var matchCount = 0;
+        // --- PARTY NAVIGATION ---
+        function filterStartParty() { filterPartyLogic('start-party-name', 'start-party-list'); } 
+        function filterCustomParties() { filterPartyLogic('party-name-input', 'custom-party-list'); } 
+        
+        function filterPartyLogic(inputId, listId) {
+            var inputVal = document.getElementById(inputId).value.toLowerCase(); var listDiv = document.getElementById(listId);
+            listDiv.innerHTML = ""; var matchCount = 0; document.getElementById(inputId).parentNode.appendChild(listDiv);
             for (var i = 0; i < partiesData.length; i++) {
                 if (partiesData[i].name.toLowerCase().indexOf(inputVal) !== -1) {
-                    var div = document.createElement("div");
-                    div.className = "autocomplete-item";
-                    div.innerText = partiesData[i].name;
-                    
-                    div.onclick = (function(partyObj) {
-                        return function() {
-                            document.getElementById('party-name-input').value = partyObj.name;
-                            document.getElementById('party-address-input').value = partyObj.add || "";
-                            document.getElementById('party-number-input').value = partyObj.num || "";
-                            document.getElementById('custom-party-list').style.display = 'none';
-                        };
-                    })(partiesData[i]);
-                    
-                    listDiv.appendChild(div);
-                    matchCount++;
+                    var div = document.createElement("div"); div.className = "autocomplete-item"; div.innerText = partiesData[i].name;
+                    div.onclick = (function(p) { return function() {
+                        if(inputId === 'start-party-name') { document.getElementById('start-party-name').value = p.name; document.getElementById('start-party-address').value = p.add || ""; } 
+                        else { document.getElementById('party-name-input').value = p.name; document.getElementById('party-address-input').value = p.add || ""; autoSaveDraft(); renderProductsFast(); }
+                        listDiv.style.display = 'none';
+                    }; })(partiesData[i]);
+                    listDiv.appendChild(div); matchCount++;
                 }
             }
-            if(matchCount > 0) {
-                listDiv.style.display = 'block';
-            } else {
-                listDiv.style.display = 'none';
-            }
+            listDiv.style.display = matchCount > 0 ? 'block' : 'none';
         }
 
-        function populateCompanyDropdown(companiesSet) {
-            var select = document.getElementById('company-select');
-            select.innerHTML = '<option value="All">-- सभी कंपनियाँ (All Companies) --</option>';
-            for(var company in companiesSet) {
-                if(company) {
-                    var opt = document.createElement('option');
-                    opt.value = company;
-                    opt.innerText = company;
-                    select.appendChild(opt);
-                }
-            }
-        }
-
-        function checkSalesman() {
-            var sel = document.getElementById('salesman-select').value;
-            document.getElementById('other-salesman').style.display = (sel === "Company Salesman") ? "block" : "none";
-        }
-
-        function goToPartyScreen() {
-            if (products.length === 0) {
-                alert("स्टॉक लिस्ट लोड नहीं हुई है। कृपया स्क्रीन पर दिखा रहा हरा/लाल मैसेज चेक करें।");
-                return;
-            }
-            var sel = document.getElementById('salesman-select').value;
-            if (sel === "") { alert("कृपया पहले सेल्समैन का नाम चुनें!"); return; }
-            if (sel === "Company Salesman") {
-                var other = document.getElementById('other-salesman').value;
-                if (!other || other.trim() === "") { alert("कृपया सेल्समैन का नाम लिखें!"); return; }
-                currentSalesman = other.trim();
-            } else {
-                currentSalesman = sel;
-            }
+        function goToPartyLayer() { navigateLayer('party-layer'); }
+        
+        function startOrderProcess() {
+            var pn = document.getElementById('start-party-name').value.trim();
+            if(!pn) { alert("पार्टी का नाम डालें!"); return; }
             
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('party-screen').style.display = 'flex';
+            document.getElementById('party-name-input').value = pn;
+            document.getElementById('party-number-input').value = document.getElementById('start-party-number').value;
+            document.getElementById('party-address-input').value = document.getElementById('start-party-address').value;
+            document.getElementById('header-salesman-name').innerHTML = currentSalesman;
+            
+            navigateLayer('main-layer');
+            renderProductsFast();
+            loadAutoDraft();
         }
 
-        function backToLogin() {
-            document.getElementById('party-screen').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'flex';
+        // --- OLD RATE & PRODUCT RENDERING ---
+        function getOldRatesForParty(partyName) {
+            var rates = {}; var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            for(var i=0; i<orders.length; i++) { if(orders[i].party === partyName) { orders[i].items.forEach(it => { rates[it.name] = { pr: it.pr, cr: it.cr }; }); } }
+            return rates;
         }
 
-        function backToPartyScreen() {
-            document.getElementById('app-screen').style.display = 'none';
-            document.getElementById('party-screen').style.display = 'flex';
+        function setFilter(type) {
+            currentStockFilter = type;
+            document.getElementById('f-all').className = "filter-btn" + (type==='all'?" active":"");
+            document.getElementById('f-in').className = "filter-btn" + (type==='in'?" active":"");
+            document.getElementById('f-out').className = "filter-btn" + (type==='out'?" active":"");
+            filterProducts();
         }
 
-        function startApp() {
-            var pName = document.getElementById('party-name-input').value.trim();
-            if(pName === "") { alert("कृपया पार्टी का नाम डालें या सर्च करें!"); return; }
+        function renderProductsFast() {
+            var list = document.getElementById('product-list'); var currParty = document.getElementById('party-name-input').value.trim();
+            var oldRates = getOldRatesForParty(currParty); var fullHtml = ""; 
             
-            currentPartyName = pName;
-            currentPartyNum = document.getElementById('party-number-input').value.trim();
-            currentPartyAdd = document.getElementById('party-address-input').value.trim();
-            
-            document.getElementById('party-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'block';
-            
-            document.getElementById('active-salesman').innerHTML = "<b>सेल्समैन:</b> " + currentSalesman + "<br><b>पार्टी:</b> <span style='color:#ffeb3b;'>" + currentPartyName + "</span>";
-            
-            var today = new Date();
-            var yyyy = today.getFullYear();
-            var mm = ("0" + (today.getMonth() + 1)).slice(-2);
-            var dd = ("0" + today.getDate()).slice(-2);
-            document.getElementById('order-date-filter').value = yyyy + '-' + mm + '-' + dd;
-            
-            renderProducts();
-        }
-
-        function renderProducts() {
-            var list = document.getElementById('product-list');
-            list.innerHTML = "";
             for(var i = 0; i < products.length; i++) {
-                var prod = products[i];
-                var div = document.createElement('div');
-                div.className = 'product-card';
-                div.setAttribute('data-name', prod.name.toLowerCase());
-                div.setAttribute('data-company', prod.company);
+                var prod = products[i]; var sRateNum = parseFloat(prod.saleRate); var displayRate = isNaN(sRateNum) ? prod.saleRate : sRateNum.toFixed(2);
+                var stockStatus = prod.currentStock > 0 ? '<span class="stock-good">🟢 ' + prod.currentStock + ' पीस</span>' : '<span class="stock-bad">🔴 Out of Stock</span>';
+                var mrpDisplay = prod.mrp ? ' | <span class="highlight-mrp">MRP: ₹' + prod.mrp + '</span>' : '';
+                var packInfo = '📦 Pck: ' + prod.pack + ' | S.R.: ₹' + displayRate + mrpDisplay + '<br>' + stockStatus;
                 
-                var sRateNum = parseFloat(prod.saleRate);
-                var displayRate = isNaN(sRateNum) ? prod.saleRate : sRateNum.toFixed(2);
-                
-                var stockStatus = prod.currentStock > 0 
-                    ? '<span class="stock-good">🟢 स्टॉक: ' + prod.currentStock + ' पीस</span>' 
-                    : '<span class="stock-bad">🔴 स्टॉक: 0 (Out of Stock)</span>';
+                var oldRateHtml = "";
+                if(oldRates[prod.name]) {
+                    var rText = "";
+                    if(oldRates[prod.name].pr) rText += "Pc: ₹" + oldRates[prod.name].pr + " ";
+                    if(oldRates[prod.name].cr) rText += "Cs: ₹" + oldRates[prod.name].cr;
+                    oldRateHtml = "<div class='old-rate-badge'>पिछली रेट: " + rText + "</div>";
+                }
 
-                var packInfo = '📦 ' + prod.pack + ' | S.R.: ' + displayRate + '<br>' + stockStatus;
-                
-                var html = '<div class="product-title">' + prod.name + '<br><span class="packing-info">' + packInfo + '</span></div>' +
-                           '<div class="input-grid">' +
-                               '<div class="input-group"><label>Pieces (पीस)</label><input type="number" id="p-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div>' +
-                               '<div class="input-group"><label>Rate / Piece</label><input type="number" id="p-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div>' +
-                               '<div class="input-group"><label>Cases (केस)</label><input type="number" id="c-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div>' +
-                               '<div class="input-group"><label>Rate / Case</label><input type="number" id="c-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div>' +
-                           '</div>' +
-                           '<div class="company-rate-box"><input type="checkbox" id="comp-rate-' + i + '" onchange="toggleCompRate(' + i + ')"> <label for="comp-rate-' + i + '">Company Rate</label></div>' +
-                           '<div class="item-total" id="total-' + i + '">Total: ₹0</div>';
-                           
-                div.innerHTML = html;
-                list.appendChild(div);
+                fullHtml += '<div class="product-card" data-name="' + prod.name.toLowerCase() + '" data-stock="' + prod.currentStock + '">' +
+                           '<div class="product-title">' + prod.name + '</div>' + oldRateHtml + '<div class="packing-info">' + packInfo + '</div>' +
+                           '<div class="input-grid"><div class="input-group"><label>Pieces</label><input type="number" id="p-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div><div class="input-group"><label>Rate/Pc</label><input type="number" id="p-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div><div class="input-group"><label>Cases</label><input type="number" id="c-qty-' + i + '" placeholder="Qty" oninput="calcTotal(' + i + ')"></div><div class="input-group"><label>Rate/Cs</label><input type="number" id="c-rate-' + i + '" placeholder="₹ Rate" oninput="calcTotal(' + i + ')"></div></div>' +
+                           '<div class="company-rate-box"><input type="checkbox" id="comp-rate-' + i + '" onchange="toggleCompRate(' + i + ')"> <label for="comp-rate-' + i + '" style="margin-left:5px;">Company Rate</label></div><div class="item-total" id="total-' + i + '">Total: ₹0</div></div>';
             }
-            filterProducts(); 
+            list.innerHTML = fullHtml; filterProducts(); 
         }
 
         function filterProducts() {
-            var text = document.getElementById('search-input').value.toLowerCase();
-            var selectedCompany = document.getElementById('company-select').value;
-            var cards = document.querySelectorAll('.product-card');
+            var text = document.getElementById('search-input').value.toLowerCase(); var cards = document.querySelectorAll('.product-card');
             for(var i = 0; i < cards.length; i++) {
-                var cardCompany = cards[i].getAttribute('data-company');
-                var cardName = cards[i].getAttribute('data-name');
-                var matchesCompany = (selectedCompany === "All" || cardCompany === selectedCompany);
-                var matchesText = (cardName.indexOf(text) !== -1);
-                cards[i].style.display = (matchesCompany && matchesText) ? 'block' : 'none';
+                var cardName = cards[i].getAttribute('data-name'); var stock = parseFloat(cards[i].getAttribute('data-stock'));
+                var matchesText = (cardName.indexOf(text) !== -1); var matchesStock = true;
+                if(currentStockFilter === 'in') matchesStock = (stock > 0); if(currentStockFilter === 'out') matchesStock = (stock <= 0);
+                cards[i].style.display = (matchesText && matchesStock) ? 'block' : 'none';
             }
         }
 
+        function calcTotal(i, isSilentLoad) {
+            if(document.getElementById('comp-rate-' + i).checked) { if(!isSilentLoad) autoSaveDraft(); return; }
+            var pq = parseFloat(document.getElementById('p-qty-' + i).value) || 0; var pr = parseFloat(document.getElementById('p-rate-' + i).value) || 0;
+            var cq = parseFloat(document.getElementById('c-qty-' + i).value) || 0; var cr = parseFloat(document.getElementById('c-rate-' + i).value) || 0;
+            var packSize = parseInt(products[i].pack) || 1;
+            if((pq + (cq * packSize)) > products[i].currentStock) {
+                alert("⚠️ स्टॉक खत्म! केवल " + products[i].currentStock + " पीस बचे हैं।");
+                document.getElementById('p-qty-' + i).value = ""; document.getElementById('c-qty-' + i).value = ""; pq=0; cq=0;
+            }
+            var total = Math.round((pq * pr) + (cq * cr)); 
+            document.getElementById('total-' + i).innerText = "Total: ₹" + total;
+            if(!isSilentLoad) autoSaveDraft();
+        }
+
+        function toggleCompRate(i) {
+            var isChecked = document.getElementById('comp-rate-' + i).checked;
+            document.getElementById('p-rate-' + i).disabled = isChecked; document.getElementById('c-rate-' + i).disabled = isChecked;
+            document.getElementById('total-' + i).innerText = isChecked ? "Total: Co. Rate" : calcTotal(i, true);
+            autoSaveDraft();
+        }
+
+        // --- AUTO DRAFT ---
         function autoSaveDraft() {
             if(isDraftLoading) return; 
             var items = [];
             for(var i = 0; i < products.length; i++) {
                 if(!document.getElementById('p-qty-' + i)) continue;
-                var pq = document.getElementById('p-qty-' + i).value;
-                var pr = document.getElementById('p-rate-' + i).value;
-                var cq = document.getElementById('c-qty-' + i).value;
-                var cr = document.getElementById('c-rate-' + i).value;
-                var comp = document.getElementById('comp-rate-' + i).checked;
-
-                if (pq || cq || comp) {
-                    items.push({ name: products[i].name, pq: pq, pr: pr, cq: cq, cr: cr, comp: comp });
-                }
+                var pq = document.getElementById('p-qty-' + i).value, pr = document.getElementById('p-rate-' + i).value, cq = document.getElementById('c-qty-' + i).value, cr = document.getElementById('c-rate-' + i).value, comp = document.getElementById('comp-rate-' + i).checked;
+                if (pq || cq || comp) items.push({ name: products[i].name, pq: pq, pr: pr, cq: cq, cr: cr, comp: comp });
             }
-
-            if(items.length > 0 || currentPartyName !== "") {
-                var draft = { items: items, partyName: currentPartyName, partyNum: currentPartyNum, partyAdd: currentPartyAdd };
-                localStorage.setItem('autoDraft_' + currentSalesman, JSON.stringify(draft));
-            } else {
-                localStorage.removeItem('autoDraft_' + currentSalesman);
-            }
+            var pName = document.getElementById('party-name-input').value, pNum = document.getElementById('party-number-input').value, pAdd = document.getElementById('party-address-input').value;
+            if(items.length > 0 || pName) localStorage.setItem('autoDraft_' + currentSalesmanMobile, JSON.stringify({ items: items, partyName: pName, partyNum: pNum, partyAdd: pAdd }));
+            else localStorage.removeItem('autoDraft_' + currentSalesmanMobile);
         }
 
-        function openDraftsModal() {
-            var draftStr = localStorage.getItem('autoDraft_' + currentSalesman);
-            var list = document.getElementById('drafts-list');
-            
-            if(!draftStr) {
-                list.innerHTML = "<p>कोई अधूरा ऑर्डर (ड्राफ्ट) नहीं है।</p>";
-            } else {
-                var draft = JSON.parse(draftStr);
-                var partyDisplayName = (draft.partyName && draft.partyName.trim() !== "") ? draft.partyName : "पार्टी का नाम नहीं डाला";
-                
-                var html = '<div class="saved-order-card" style="background:#fff3e0;">';
-                html += '<strong>' + partyDisplayName + '</strong><br>';
-                html += '<div style="margin-top:10px; font-size:13px; color:#555;">(कुल आइटम्स: ' + draft.items.length + ')</div>';
-                
-                html += '<ul style="font-size:12px; color:#333; padding-left:20px; margin-top:5px;">';
-                for(var j=0; j<draft.items.length; j++) {
-                    var pQText = draft.items[j].pq ? draft.items[j].pq + ' Pcs' : '';
-                    var cQText = draft.items[j].cq ? draft.items[j].cq + ' Cases' : '';
-                    var joinText = (pQText && cQText) ? ' & ' : '';
-                    html += '<li>' + draft.items[j].name + ' (' + pQText + joinText + cQText + ')</li>';
-                }
-                html += '</ul>';
-                
-                html += '<div style="margin-top:10px; display:flex; gap:10px;">';
-                html += '<button onclick="loadAutoDraft()" style="padding:8px 12px; font-size:13px; background:#e67e22; color:white; border:none; border-radius:4px; flex:1;">Load (ऑर्डर पूरा करें)</button>';
-                html += '<button onclick="deleteAutoDraft()" style="padding:8px 12px; font-size:13px; background:#c0392b; color:white; border:none; border-radius:4px; flex:1;">Delete</button>';
-                html += '</div></div>';
-                
-                list.innerHTML = html;
-            }
-            document.getElementById('drafts-modal').style.display = 'block';
+        function openDraftsLogic() {
+            var draftStr = localStorage.getItem('autoDraft_' + currentSalesmanMobile); var list = document.getElementById('drafts-list');
+            if(!draftStr) { list.innerHTML = "<p>कोई ड्राफ्ट नहीं है।</p>"; return; }
+            var draft = JSON.parse(draftStr); var html = '<div class="saved-order-card" style="background:#fff3e0;"><strong>' + (draft.partyName || "पार्टी नहीं") + '</strong><br><div style="font-size:13px; color:#555;">(आइटम्स: ' + draft.items.length + ')</div><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="loadAutoDraft()" style="padding:8px; background:#e67e22; color:white; border-radius:4px; flex:1;">Load</button><button onclick="deleteAutoDraft()" style="padding:8px; background:#c0392b; color:white; border-radius:4px; flex:1;">Delete</button></div></div>';
+            list.innerHTML = html;
         }
 
         function loadAutoDraft() {
-            var draftStr = localStorage.getItem('autoDraft_' + currentSalesman);
+            var draftStr = localStorage.getItem('autoDraft_' + currentSalesmanMobile);
             if(draftStr) {
-                isDraftLoading = true;
-                var draft = JSON.parse(draftStr);
-                
-                for(var k=0; k<products.length; k++) {
-                    if(document.getElementById('p-qty-'+k)) {
-                        document.getElementById('p-qty-'+k).value = "";
-                        document.getElementById('p-rate-'+k).value = "";
-                        document.getElementById('c-qty-'+k).value = "";
-                        document.getElementById('c-rate-'+k).value = "";
-                        document.getElementById('comp-rate-'+k).checked = false;
-                        document.getElementById('total-'+k).innerText = "Total: ₹0";
-                    }
-                }
-
+                isDraftLoading = true; var draft = JSON.parse(draftStr); resetFormSilent();
                 for(var j=0; j<draft.items.length; j++) {
-                    var item = draft.items[j];
-                    var prodIndex = products.findIndex(p => p.name === item.name);
+                    var item = draft.items[j]; var prodIndex = products.findIndex(p => p.name === item.name);
                     if(prodIndex !== -1) {
-                        document.getElementById('p-qty-'+prodIndex).value = item.pq;
-                        document.getElementById('p-rate-'+prodIndex).value = item.pr;
-                        document.getElementById('c-qty-'+prodIndex).value = item.cq;
-                        document.getElementById('c-rate-'+prodIndex).value = item.cr;
-                        document.getElementById('comp-rate-'+prodIndex).checked = item.comp;
-                        calcTotal(prodIndex, true); 
+                        document.getElementById('p-qty-'+prodIndex).value = item.pq; document.getElementById('p-rate-'+prodIndex).value = item.pr;
+                        document.getElementById('c-qty-'+prodIndex).value = item.cq; document.getElementById('c-rate-'+prodIndex).value = item.cr;
+                        document.getElementById('comp-rate-'+prodIndex).checked = item.comp; calcTotal(prodIndex, true); 
                     }
                 }
-                
-                currentPartyName = draft.partyName || "";
-                currentPartyNum = draft.partyNum || "";
-                currentPartyAdd = draft.partyAdd || "";
-                
-                document.getElementById('party-name-input').value = currentPartyName;
-                document.getElementById('party-number-input').value = currentPartyNum;
-                document.getElementById('party-address-input').value = currentPartyAdd;
-
-                document.getElementById('active-salesman').innerHTML = "<b>सेल्समैन:</b> " + currentSalesman + "<br><b>पार्टी:</b> <span style='color:#ffeb3b;'>" + currentPartyName + "</span>";
-
-                isDraftLoading = false;
-                closeModal('drafts-modal');
-                alert("ड्राफ्ट लोड हो गया है!");
+                document.getElementById('party-name-input').value = draft.partyName || ""; document.getElementById('party-number-input').value = draft.partyNum || ""; document.getElementById('party-address-input').value = draft.partyAdd || "";
+                isDraftLoading = false; closeModal('drafts-modal');
             }
         }
+        function deleteAutoDraft() { if(confirm("डिलीट करें?")) { localStorage.removeItem('autoDraft_' + currentSalesmanMobile); openDraftsLogic(); } }
 
-        function deleteAutoDraft() {
-            if(confirm("क्या आप इस ड्राफ्ट को डिलीट करना चाहते हैं?")) {
-                localStorage.removeItem('autoDraft_' + currentSalesman);
-                openDraftsModal(); 
-            }
-        }
-
-        function calcTotal(i, isSilentLoad) {
-            if(document.getElementById('comp-rate-' + i).checked) {
-                if(!isSilentLoad && !isDraftLoading) autoSaveDraft();
-                return;
-            }
-            var pq = parseFloat(document.getElementById('p-qty-' + i).value) || 0;
-            var pr = parseFloat(document.getElementById('p-rate-' + i).value) || 0;
-            var cq = parseFloat(document.getElementById('c-qty-' + i).value) || 0;
-            var cr = parseFloat(document.getElementById('c-rate-' + i).value) || 0;
-            
-            var packSize = parseInt(products[i].pack) || 1;
-            var reqPieces = pq + (cq * packSize);
-            var available = products[i].currentStock;
-
-            if(reqPieces > available) {
-                alert("⚠️ स्टॉक खत्म! आपके पास केवल " + available + " पीस बचे हैं।");
-                document.getElementById('p-qty-' + i).value = "";
-                document.getElementById('c-qty-' + i).value = "";
-                pq = 0; cq = 0;
-            }
-
-            var total = (pq * pr) + (cq * cr);
-            document.getElementById('total-' + i).innerText = "Total: ₹" + total;
-            
-            if(!isSilentLoad && !isDraftLoading) autoSaveDraft();
-        }
-
-        function toggleCompRate(i) {
-            var isChecked = document.getElementById('comp-rate-' + i).checked;
-            document.getElementById('p-rate-' + i).disabled = isChecked;
-            document.getElementById('c-rate-' + i).disabled = isChecked;
-            if(isChecked) {
-                document.getElementById('total-' + i).innerText = "Total: Company Rate";
-            } else {
-                calcTotal(i);
-            }
-            if(!isDraftLoading) autoSaveDraft();
-        }
-
-        function openCart() { 
-            var info = "<b>पार्टी का नाम:</b> " + currentPartyName + "<br>";
-            if(currentPartyNum) info += "<b>नंबर:</b> " + currentPartyNum + "<br>";
-            if(currentPartyAdd) info += "<b>पता:</b> " + currentPartyAdd;
-            document.getElementById('cart-party-info').innerHTML = info;
-            document.getElementById('cart-modal').style.display = 'block'; 
-        }
-        
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        
-        function openSavedOrders() { 
-            renderSavedOrders(); 
-            document.getElementById('saved-orders-modal').style.display = 'block'; 
-        }
-
+        // --- CART & SAVE WITH PROFIT CALCULATION ---
         function getCartData() {
             var items = [];
             for(var i = 0; i < products.length; i++) {
                 if(!document.getElementById('p-qty-' + i)) continue;
-                var pq = document.getElementById('p-qty-' + i).value;
-                var pr = document.getElementById('p-rate-' + i).value;
-                var cq = document.getElementById('c-qty-' + i).value;
-                var cr = document.getElementById('c-rate-' + i).value;
-                var comp = document.getElementById('comp-rate-' + i).checked;
-                if (pq || cq) {
-                    items.push({ name: products[i].name, pq: pq, pr: pr, cq: cq, cr: cr, comp: comp });
-                }
+                var pq = document.getElementById('p-qty-' + i).value, pr = document.getElementById('p-rate-' + i).value, cq = document.getElementById('c-qty-' + i).value, cr = document.getElementById('c-rate-' + i).value, comp = document.getElementById('comp-rate-' + i).checked;
+                if (pq || cq) items.push({ name: products[i].name, pq: pq, pr: pr, cq: cq, cr: cr, comp: comp, cost: products[i].cost, pack: products[i].pack });
             }
             return items;
         }
 
-        function showPreview() {
-            var items = getCartData();
-            if(items.length === 0) { alert("ऑर्डर में कोई प्रोडक्ट नहीं है!"); return; }
-
-            var msg = "*ORDER DETAILS*\n";
-            msg += "*Salesman:* " + currentSalesman + "\n";
-            msg += "*Party Name:* *" + currentPartyName + "*\n";
-            if(currentPartyNum) msg += "*Contact:* " + currentPartyNum + "\n";
-            if(currentPartyAdd) msg += "*Address:* " + currentPartyAdd + "\n";
-            msg += "\n*Items:*\n";
-
-            var grandTotal = 0;
-            for(var i = 0; i < items.length; i++) {
-                var item = items[i];
-                msg += "- " + item.name + "\n";
-                if(item.pq) {
-                    if(item.comp) { msg += "   " + item.pq + " Pcs (Company Rate)\n"; } 
-                    else { var t1 = item.pq * item.pr; grandTotal += t1; msg += "   " + item.pq + " Pcs x ₹" + item.pr + " = ₹" + t1 + "\n"; }
+        function buildCartPreview() {
+            var pName = document.getElementById('party-name-input').value.trim(); document.getElementById('cart-party-info').innerHTML = "<b>Party:</b> " + (pName||"<span style='color:red;'>नाम नहीं डाला</span>");
+            var items = getCartData(); var previewHTML = "<b>Items:</b><br>"; var grandTotal = 0;
+            if(items.length===0) previewHTML += "<span style='color:red;'>कार्ट खाली है!</span>";
+            else {
+                for(var i=0; i<items.length; i++) {
+                    var it = items[i]; previewHTML += (i+1) + ". " + it.name + "<br>";
+                    if(it.pq) { if(it.comp) previewHTML += " > " + it.pq + " Pcs (Co)<br>"; else { var t1 = Math.round(it.pq * it.pr); grandTotal+=t1; previewHTML += " > " + it.pq + " Pcs x ₹" + it.pr + " = ₹" + t1 + "<br>"; } }
+                    if(it.cq) { if(it.comp) previewHTML += " > " + it.cq + " Cs (Co)<br>"; else { var t2 = Math.round(it.cq * it.cr); grandTotal+=t2; previewHTML += " > " + it.cq + " Cs x ₹" + it.cr + " = ₹" + t2 + "<br>"; } }
                 }
-                if(item.cq) {
-                    if(item.comp) { msg += "   " + item.cq + " Cases (Company Rate)\n"; } 
-                    else { var t2 = item.cq * item.cr; grandTotal += t2; msg += "   " + item.cq + " Cases x ₹" + item.cr + " = ₹" + t2 + "\n"; }
-                }
+                if(grandTotal > 0) previewHTML += "<br><b style='color:#d32f2f;'>Total Bill: ₹" + grandTotal + "</b>";
             }
-            if(grandTotal > 0) { msg += "\n*Total Bill: ₹" + grandTotal + "*"; }
-
-            document.getElementById('preview-text').innerText = msg;
-            var encodedMsg = encodeURIComponent(msg);
-            document.getElementById('wa-link-admin').href = "https://wa.me/" + phoneNo + "?text=" + encodedMsg;
-            document.getElementById('wa-link-group').href = "https://api.whatsapp.com/send?text=" + encodedMsg;
-            document.getElementById('preview-modal').style.display = 'block';
-        }
-
-        function sendToAdminBackend(orderData) {
-            if(GOOGLE_SHEET_API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
-            
-            var now = new Date();
-            var timeString = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-            
-            var formattedItems = "";
-            var grandTotal = 0;
-            for(var i = 0; i < orderData.items.length; i++) {
-                var item = orderData.items[i];
-                formattedItems += (i+1) + ". " + item.name + "\n";
-                if(item.pq) {
-                    if(item.comp) { formattedItems += "   > " + item.pq + " Pcs (Company Rate)\n"; } 
-                    else { var t1 = item.pq * item.pr; grandTotal += t1; formattedItems += "   > " + item.pq + " Pcs x ₹" + item.pr + " = ₹" + t1 + "\n"; }
-                }
-                if(item.cq) {
-                    if(item.comp) { formattedItems += "   > " + item.cq + " Cases (Company Rate)\n"; } 
-                    else { var t2 = item.cq * item.cr; grandTotal += t2; formattedItems += "   > " + item.cq + " Cases x ₹" + item.cr + " = ₹" + t2 + "\n"; }
-                }
-            }
-            if(grandTotal > 0) { formattedItems += "\n=> Total Bill: ₹" + grandTotal; }
-
-            var payload = {
-                date: orderData.dateValue,
-                time: timeString,
-                salesman: orderData.salesman,
-                partyName: orderData.party,
-                partyNum: orderData.partyNum ? orderData.partyNum : "नंबर नहीं",
-                partyAdd: orderData.partyAdd ? orderData.partyAdd : "पता नहीं",
-                totalItems: orderData.items.length,
-                itemsDetail: formattedItems
-            };
-
-            fetch(GOOGLE_SHEET_API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8'
-                },
-                body: JSON.stringify(payload)
-            }).catch(e => console.log("Tracking Error:", e));
+            document.getElementById('cart-items-preview').innerHTML = previewHTML;
         }
 
         function saveCurrentOrder() {
-            var items = getCartData();
-            if(items.length === 0) { alert("ऑर्डर खाली है! कृपया पहले कोई आइटम चुनें।"); return; }
+            var pName = document.getElementById('party-name-input').value.trim(); if(!pName) { alert("पार्टी का नाम डालें!"); return; }
+            var items = getCartData(); if(items.length === 0) { alert("कार्ट खाली है!"); return; }
 
-            for(var j = 0; j < items.length; j++) {
+            for(var j=0; j<items.length; j++) {
                 var prodIndex = products.findIndex(p => p.name === items[j].name);
-                if(prodIndex !== -1) {
-                     var packSize = parseInt(products[prodIndex].pack) || 1;
-                     var reqP = parseFloat(items[j].pq) || 0;
-                     var reqC = parseFloat(items[j].cq) || 0;
-                     products[prodIndex].currentStock -= (reqP + (reqC * packSize));
-                }
+                if(prodIndex !== -1) products[prodIndex].currentStock -= ((parseFloat(items[j].pq)||0) + ((parseFloat(items[j].cq)||0) * (parseInt(products[prodIndex].pack)||1)));
             }
-
             var today = new Date();
-            var yyyy = today.getFullYear();
-            var mm = ("0" + (today.getMonth() + 1)).slice(-2);
-            var dd = ("0" + today.getDate()).slice(-2);
+            var newOrder = { salesman: currentSalesman, party: pName, partyNum: document.getElementById('party-number-input').value.trim(), partyAdd: document.getElementById('party-address-input').value.trim(), date: today.toLocaleString('en-IN'), dateValue: today.getFullYear()+'-'+("0"+(today.getMonth()+1)).slice(-2)+'-'+("0"+today.getDate()).slice(-2), items: items };
 
-            var newOrder = {
-                salesman: currentSalesman,
-                party: currentPartyName,
-                partyNum: currentPartyNum,
-                partyAdd: currentPartyAdd,
-                date: today.toLocaleString('en-IN'),
-                dateValue: yyyy + '-' + mm + '-' + dd,
-                items: items
-            };
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || []; orders.push(newOrder); localStorage.setItem('savedOrders', JSON.stringify(orders));
+            localStorage.removeItem('autoDraft_' + currentSalesmanMobile);
+            
+            if(GOOGLE_SHEET_API_URL !== "YOUR_GOOGLE_SCRIPT_URL_HERE") {
+                var fItems = ""; var gTotal = 0; var totalCost = 0;
+                for(var i=0; i<newOrder.items.length; i++) {
+                    var it = newOrder.items[i]; fItems += (i+1)+". "+it.name+"\n";
+                    
+                    var pcs = parseFloat(it.pq) || 0;
+                    var cases = parseFloat(it.cq) || 0;
+                    var packSize = parseInt(it.pack) || 1;
+                    
+                    // Cost Math
+                    var itemCost = (pcs + (cases * packSize)) * (parseFloat(it.cost) || 0);
+                    totalCost += itemCost;
+                    var itemSaleTotal = 0;
 
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            orders.push(newOrder);
-            localStorage.setItem('savedOrders', JSON.stringify(orders));
-            localStorage.removeItem('autoDraft_' + currentSalesman);
-            
-            // Send beautifully formatted data to Admin Google Sheet silently
-            sendToAdminBackend(newOrder);
-
-            alert("ऑर्डर सफलतापूर्वक सेव हो गया!");
-            closeModal('cart-modal');
-            
-            document.getElementById('party-name-input').value = "";
-            document.getElementById('party-number-input').value = "";
-            document.getElementById('party-address-input').value = "";
-            backToPartyScreen();
-            
-            for(var i = 0; i < products.length; i++) {
-                if(document.getElementById('p-qty-'+i)) {
-                    document.getElementById('p-qty-'+i).value = "";
-                    document.getElementById('p-rate-'+i).value = "";
-                    document.getElementById('c-qty-'+i).value = "";
-                    document.getElementById('c-rate-'+i).value = "";
-                    document.getElementById('comp-rate-'+i).checked = false;
-                    document.getElementById('total-'+i).innerText = "Total: ₹0";
+                    if(it.pq) { if(it.comp) fItems += " > "+it.pq+" Pcs (Co. Rate)\n"; else { var t1 = Math.round(pcs*it.pr); itemSaleTotal+=t1; fItems += " > "+it.pq+" Pcs x ₹"+it.pr+" = ₹"+t1+"\n"; } }
+                    if(it.cq) { if(it.comp) fItems += " > "+it.cq+" Cases (Co. Rate)\n"; else { var t2 = Math.round(cases*it.cr); itemSaleTotal+=t2; fItems += " > "+it.cq+" Cases x ₹"+it.cr+" = ₹"+t2+"\n"; } }
+                    
+                    gTotal += itemSaleTotal;
+                    
+                    if(!it.comp) {
+                        var itemProfit = itemSaleTotal - itemCost;
+                        fItems += "   [Cost: ₹"+Math.round(itemCost)+" | Profit: ₹"+Math.round(itemProfit)+"]\n";
+                    }
                 }
+                if(gTotal>0) fItems += "\n=> Total Bill: ₹" + gTotal;
+                var grossProfit = Math.round(gTotal - totalCost);
+
+                fetch(GOOGLE_SHEET_API_URL, { 
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify({ 
+                        date: newOrder.dateValue, time: today.toLocaleTimeString('en-IN'), salesman: newOrder.salesman, 
+                        partyName: newOrder.party, partyNum: newOrder.partyNum||"N/A", partyAdd: newOrder.partyAdd||"N/A", 
+                        totalItems: newOrder.items.length, totalBill: gTotal, grossProfit: grossProfit, itemsDetail: fItems 
+                    }) 
+                }).catch(e=>{});
             }
+            closeAllModals(); showToast("✅ Order Saved!"); resetFormSilent(); renderProductsFast(); window.scrollTo(0,0);
         }
 
-        // --- NEW EDIT ORDER FEATURE ---
-        function editSavedOrder(idx) {
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            var orderToEdit = orders[idx];
-
-            if(!confirm("क्या आप इस ऑर्डर में बदलाव करना चाहते हैं? यह वापस आपके कार्ट में खुल जाएगा।")) return;
-
-            // 1. Restore Stock in memory (so they don't get 'Stock Full' error)
-            for(var j=0; j<orderToEdit.items.length; j++) {
-                var item = orderToEdit.items[j];
-                var prodIndex = products.findIndex(p => p.name === item.name);
-                if(prodIndex !== -1) {
-                     var packSize = parseInt(products[prodIndex].pack) || 1;
-                     var reqP = parseFloat(item.pq) || 0;
-                     var reqC = parseFloat(item.cq) || 0;
-                     products[prodIndex].currentStock += (reqP + (reqC * packSize));
-                }
+        function resetFormSilent() {
+            document.getElementById('party-name-input').value = ""; document.getElementById('party-number-input').value = ""; document.getElementById('party-address-input').value = ""; document.getElementById('search-input').value = "";
+            for(var i=0; i<products.length; i++) {
+                if(document.getElementById('p-qty-'+i)) { document.getElementById('p-qty-'+i).value=""; document.getElementById('p-rate-'+i).value=""; document.getElementById('c-qty-'+i).value=""; document.getElementById('c-rate-'+i).value=""; document.getElementById('comp-rate-'+i).checked=false; document.getElementById('total-'+i).innerText="Total: ₹0"; }
             }
-
-            // 2. Re-render products to update stock badges
-            renderProducts();
-
-            // 3. Clear existing inputs & Load new ones
-            for(var j=0; j<orderToEdit.items.length; j++) {
-                var item = orderToEdit.items[j];
-                var prodIndex = products.findIndex(p => p.name === item.name);
-                if(prodIndex !== -1) {
-                     document.getElementById('p-qty-'+prodIndex).value = item.pq || "";
-                     document.getElementById('p-rate-'+prodIndex).value = item.pr || "";
-                     document.getElementById('c-qty-'+prodIndex).value = item.cq || "";
-                     document.getElementById('c-rate-'+prodIndex).value = item.cr || "";
-                     document.getElementById('comp-rate-'+prodIndex).checked = item.comp || false;
-                     calcTotal(prodIndex, true); 
-                }
-            }
-
-            // 4. Load Party Info
-            currentPartyName = orderToEdit.party || "";
-            currentPartyNum = orderToEdit.partyNum || "";
-            currentPartyAdd = orderToEdit.partyAdd || "";
-            
-            document.getElementById('party-name-input').value = currentPartyName;
-            document.getElementById('party-number-input').value = currentPartyNum;
-            document.getElementById('party-address-input').value = currentPartyAdd;
-
-            document.getElementById('active-salesman').innerHTML = "<b>सेल्समैन:</b> " + currentSalesman + "<br><b>पार्टी:</b> <span style='color:#ffeb3b;'>" + currentPartyName + "</span>";
-
-            // 5. Remove from saved orders so it's not duplicated
-            orders.splice(idx, 1);
-            localStorage.setItem('savedOrders', JSON.stringify(orders));
-
-            // 6. Close Modal
-            closeModal('saved-orders-modal');
-            alert("ऑर्डर वापस खुल गया है। अब आप आइटम कम-ज्यादा करके स्क्रीन से ही दोबारा 'Save Order' कर सकते हैं!");
         }
+        function clearCartWithConfirmation() { if(confirm("डिलीट करें?")) { localStorage.removeItem('autoDraft_' + currentSalesmanMobile); closeAllModals(); resetFormSilent(); window.scrollTo(0,0); } }
 
-        function clearCartWithConfirmation() {
-            if(confirm("क्या आप इस अधूरे ऑर्डर (ड्राफ्ट) को डिलीट करके नया ऑर्डर शुरू करना चाहते हैं?")) {
-                localStorage.removeItem('autoDraft_' + currentSalesman);
-                closeModal('cart-modal');
-                document.getElementById('party-name-input').value = "";
-                document.getElementById('party-number-input').value = "";
-                document.getElementById('party-address-input').value = "";
-                backToPartyScreen();
-                
-                for(var i = 0; i < products.length; i++) {
-                    if(document.getElementById('p-qty-'+i)) {
-                        document.getElementById('p-qty-'+i).value = "";
-                        document.getElementById('p-rate-'+i).value = "";
-                        document.getElementById('c-qty-'+i).value = "";
-                        document.getElementById('c-rate-'+i).value = "";
-                        document.getElementById('comp-rate-'+i).checked = false;
-                        document.getElementById('total-'+i).innerText = "Total: ₹0";
+        // --- DASHBOARD ---
+        function generateDashboard() {
+            var fDate = document.getElementById('dash-date-filter').value; var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            document.getElementById('dash-salesman-name').innerText = "👨‍💼 Salesman: " + currentSalesman;
+            var tOrders = 0; var tSales = 0; var itemMap = {};
+            for(var k=0; k<orders.length; k++) {
+                var o = orders[k];
+                if(o.salesman === currentSalesman && (!fDate || o.dateValue === fDate)) {
+                    tOrders++;
+                    for(var i=0; i<o.items.length; i++) {
+                        var it = o.items[i]; var iTotal = 0; var pcs = parseFloat(it.pq)||0; var cs = parseFloat(it.cq)||0;
+                        if(!it.comp) iTotal = Math.round(pcs*(parseFloat(it.pr)||0)) + Math.round(cs*(parseFloat(it.cr)||0));
+                        tSales += iTotal;
+                        if(!itemMap[it.name]) itemMap[it.name] = { pcs: 0, cases: 0, val: 0 };
+                        itemMap[it.name].pcs += pcs; itemMap[it.name].cases += cs; itemMap[it.name].val += iTotal;
                     }
                 }
             }
+            document.getElementById('dash-total-orders').innerText = tOrders; document.getElementById('dash-total-sales').innerText = "₹" + tSales.toLocaleString('en-IN');
+            var aList = document.getElementById('dash-analysis-list'); aList.innerHTML = ""; var keys = Object.keys(itemMap);
+            if(keys.length === 0) aList.innerHTML = "<div style='color:gray;font-size:13px;text-align:center;'>कोई डेटा नहीं।</div>";
+            else {
+                keys.sort((a,b) => itemMap[b].val - itemMap[a].val);
+                for(var j=0; j<keys.length; j++) {
+                    var d = itemMap[keys[j]];
+                    aList.innerHTML += '<div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0;font-size:13px;"><div style="max-width:70%;"><b>'+keys[j]+'</b><br><span style="color:gray;font-size:11px;">Sold: '+(d.pcs>0?d.pcs+" Pcs ":"")+(d.cases>0?d.cases+" Cs":"")+'</span></div><div style="color:#27ae60;font-weight:bold;">₹'+d.val.toLocaleString('en-IN')+'</div></div>';
+                }
+            }
         }
+        function clearDashDate() { document.getElementById('dash-date-filter').value = ""; generateDashboard(); }
 
-        function clearDateFilter() {
-            document.getElementById('order-date-filter').value = "";
-            renderSavedOrders();
-        }
-
+        // --- SAVED ORDERS & EDIT ---
+        function clearSavedDateFilter() { document.getElementById('order-date-filter').value = ""; renderSavedOrders(); }
         function renderSavedOrders() {
-            var list = document.getElementById('saved-orders-list');
-            var filterDate = document.getElementById('order-date-filter').value;
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            list.innerHTML = "";
-            var filteredCount = 0;
-            
-            for(var k = 0; k < orders.length; k++) {
-                if(!filterDate || orders[k].dateValue === filterDate) {
-                    filteredCount++;
-                    var o = orders[k];
-                    var html = '<div class="saved-order-card"><label class="order-header-row">';
-                    html += '<span><strong>' + o.party + '</strong> <br><small style="color:gray">' + o.date + '</small></span>';
-                    html += '<input type="checkbox" class="order-cb" data-original-index="' + k + '" checked></label>';
-                    html += '<div class="order-details-box">';
-                    
-                    var grandTotal = 0;
-                    for(var i = 0; i < o.items.length; i++) {
-                        var item = o.items[i];
-                        html += '<div style="margin-bottom: 5px;"><b>' + item.name + '</b><br>';
-                        if(item.pq) {
-                            if(item.comp) { html += ' - ' + item.pq + ' Pcs (Company Rate)<br>'; } 
-                            else { var t1 = item.pq * item.pr; grandTotal += t1; html += ' - ' + item.pq + ' Pcs x ₹' + item.pr + ' = ₹' + t1 + '<br>'; }
-                        }
-                        if(item.cq) {
-                            if(item.comp) { html += ' - ' + item.cq + ' Cases (Company Rate)<br>'; } 
-                            else { var t2 = item.cq * item.cr; grandTotal += t2; html += ' - ' + item.cq + ' Cases x ₹' + item.cr + ' = ₹' + t2 + '<br>'; }
-                        }
-                        html += '</div>';
+            var list = document.getElementById('saved-orders-list'); var fDate = document.getElementById('order-date-filter').value;
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || []; list.innerHTML = ""; var fCount = 0;
+            for(var k=0; k<orders.length; k++) {
+                var o = orders[k];
+                if(o.salesman === currentSalesman && (!fDate || o.dateValue === fDate)) {
+                    fCount++; var html = '<div class="saved-order-card"><label style="display:flex;justify-content:space-between;"><span><strong>'+o.party+'</strong><br><small style="color:gray">'+o.date+'</small></span><input type="checkbox" class="order-cb" data-idx="'+k+'" checked></label><div style="background:#f9f9f9;padding:10px;margin-top:10px;font-size:13px;">';
+                    var gTotal = 0;
+                    for(var i=0; i<o.items.length; i++) {
+                        var it = o.items[i]; html += '<b>'+it.name+'</b><br>';
+                        if(it.pq) { if(it.comp) html += '- '+it.pq+' Pcs (Co)<br>'; else { var t1 = Math.round(it.pq*it.pr); gTotal+=t1; html += '- '+it.pq+' Pcs x ₹'+it.pr+' = ₹'+t1+'<br>'; } }
+                        if(it.cq) { if(it.comp) html += '- '+it.cq+' Cs (Co)<br>'; else { var t2 = Math.round(it.cq*it.cr); gTotal+=t2; html += '- '+it.cq+' Cs x ₹'+it.cr+' = ₹'+t2+'<br>'; } }
                     }
-                    html += '</div>';
-                    if(grandTotal > 0) { html += '<div class="grand-total">Total Bill: ₹' + grandTotal + '</div>'; }
-                    
-                    // EDIT BUTTON ADDED HERE
-                    html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px; text-align:right;">';
-                    html += '<button onclick="editSavedOrder(' + k + ')" style="padding:8px 15px; font-size:13px; background:#f39c12; color:white; border:none; border-radius:4px; cursor:pointer;">✏️️ Edit Order (बदलाव करें)</button>';
-                    html += '</div>';
-
-                    html += '</div>';
+                    if(gTotal>0) html += '</div><div style="color:#d32f2f;font-weight:bold;text-align:right;margin-top:5px;">Total: ₹'+gTotal+'</div>';
+                    html += '<div style="margin-top:10px;text-align:right;"><button onclick="editSavedOrder('+k+')" style="padding:8px 15px; font-size:13px; background:#f39c12; color:white; border-radius:4px;">✏ Edit</button></div></div>';
                     list.innerHTML += html;
                 }
             }
-            if(filteredCount === 0) { list.innerHTML = filterDate ? "इस तारीख का कोई सेव किया हुआ ऑर्डर नहीं है।" : "कोई सेव किया हुआ ऑर्डर नहीं है।"; }
+            if(fCount === 0) list.innerHTML = "इस तारीख का कोई सेव किया हुआ ऑर्डर नहीं है।";
+        }
+
+        function editSavedOrder(idx) {
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || []; var o = orders[idx];
+            if(!confirm("एडिट करें? (वापस मेन स्क्रीन पर खुलेगा)")) return;
+            for(var j=0; j<o.items.length; j++) { var prodIdx = products.findIndex(p=>p.name===o.items[j].name); if(prodIdx!==-1) products[prodIdx].currentStock += ((parseFloat(o.items[j].pq)||0) + (parseFloat(o.items[j].cq)||0)*(parseInt(products[prodIdx].pack)||1)); }
+            resetFormSilent();
+            for(var j=0; j<o.items.length; j++) {
+                var it = o.items[j]; var pIdx = products.findIndex(p=>p.name===it.name);
+                if(pIdx!==-1) { document.getElementById('p-qty-'+pIdx).value=it.pq||""; document.getElementById('p-rate-'+pIdx).value=it.pr||""; document.getElementById('c-qty-'+pIdx).value=it.cq||""; document.getElementById('c-rate-'+pIdx).value=it.cr||""; document.getElementById('comp-rate-'+pIdx).checked=it.comp||false; calcTotal(pIdx,true); }
+            }
+            document.getElementById('party-name-input').value = o.party||""; document.getElementById('party-number-input').value = o.partyNum||""; document.getElementById('party-address-input').value = o.partyAdd||"";
+            orders.splice(idx, 1); localStorage.setItem('savedOrders', JSON.stringify(orders));
+            closeAllModals(); window.scrollTo(0,0); renderProductsFast();
         }
 
         function deleteSelectedOrders() {
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
-            var cbs = document.querySelectorAll('.order-cb');
-            var anyChecked = false;
-            var checkedOriginals = {};
-            
-            for(var c=0; c < cbs.length; c++) {
-                if(cbs[c].checked) {
-                    anyChecked = true;
-                    checkedOriginals[cbs[c].getAttribute('data-original-index')] = true;
-                }
-            }
-            if(!anyChecked) { alert("कृपया डिलीट करने के लिए कम से कम एक ऑर्डर बॉक्स पर टिक (✅) लगाएँ!"); return; }
-            if(!confirm("क्या आप सिलेक्टेड ऑर्डर्स को डिलीट (ट्रैश) करना चाहते हैं?")) return;
-
-            var newOrders = [];
-            var now = new Date().getTime();
-            for(var k=0; k < orders.length; k++) {
-                if(checkedOriginals[k]) {
-                    var orderToTrash = orders[k];
-                    orderToTrash.deletedAt = now;
-                    trashed.push(orderToTrash);
-                } else {
-                    newOrders.push(orders[k]);
-                }
-            }
-            localStorage.setItem('savedOrders', JSON.stringify(newOrders));
-            localStorage.setItem('trashedOrders', JSON.stringify(trashed));
-            renderSavedOrders();
-            alert("सिलेक्टेड ऑर्डर्स ट्रैश बिन में डाल दिए गए हैं!");
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || []; var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
+            var cbs = document.querySelectorAll('.order-cb'); var checked = {}; var any = false;
+            cbs.forEach(cb => { if(cb.checked) { any=true; checked[cb.getAttribute('data-idx')] = true; } });
+            if(!any) { alert("चुनें!"); return; } if(!confirm("डिलीट करें?")) return;
+            var newOrders = []; var now = new Date().getTime();
+            for(var k=0; k<orders.length; k++) { if(checked[k]) { var o=orders[k]; o.deletedAt=now; trashed.push(o); } else newOrders.push(orders[k]); }
+            localStorage.setItem('savedOrders', JSON.stringify(newOrders)); localStorage.setItem('trashedOrders', JSON.stringify(trashed)); renderSavedOrders();
         }
-
-        function cleanTrash() {
-            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
-            var now = new Date().getTime();
-            var thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-            var validTrash = [];
-            for(var i=0; i<trashed.length; i++) {
-                if (now - trashed[i].deletedAt < thirtyDaysMs) { validTrash.push(trashed[i]); }
-            }
-            localStorage.setItem('trashedOrders', JSON.stringify(validTrash));
+        function cleanTrash() { var tr = JSON.parse(localStorage.getItem('trashedOrders'))||[]; var now = new Date().getTime(); localStorage.setItem('trashedOrders', JSON.stringify(tr.filter(o => now-o.deletedAt < 30*24*60*60*1000))); }
+        function renderTrash() { var tr = JSON.parse(localStorage.getItem('trashedOrders'))||[]; var list = document.getElementById('trash-orders-list'); list.innerHTML=""; var fd=false; tr.forEach((o,i)=>{ if(o.salesman===currentSalesman){ fd=true; list.innerHTML+='<div class="saved-order-card"><strong>'+o.party+'</strong><br><button onclick="restoreOrder('+i+')" style="background:green;color:white;padding:5px;">Restore</button> <button onclick="permanentlyDelete('+i+')" style="background:red;color:white;padding:5px;">Del</button></div>'; } }); if(!fd) list.innerHTML="ट्रैश खाली है"; }
+        function restoreOrder(i) { var tr = JSON.parse(localStorage.getItem('trashedOrders'))||[]; var orders = JSON.parse(localStorage.getItem('savedOrders'))||[]; var o = tr.splice(i,1)[0]; delete o.deletedAt; orders.push(o); localStorage.setItem('trashedOrders',JSON.stringify(tr)); localStorage.setItem('savedOrders',JSON.stringify(orders)); renderTrash(); renderSavedOrders(); }
+        function permanentlyDelete(i) { if(confirm("डिलीट?")){ var tr = JSON.parse(localStorage.getItem('trashedOrders'))||[]; tr.splice(i,1); localStorage.setItem('trashedOrders',JSON.stringify(tr)); renderTrash(); } }
+        
+        function showPreview() {
+            var items = getCartData(); if(items.length===0) return;
+            var msg = "*ORDER DETAILS*\n*Salesman:* "+currentSalesman+"\n*Party:* *"+document.getElementById('party-name-input').value.trim()+"*\n\n*Items:*\n"; var gTotal = 0;
+            items.forEach((it, i) => { msg += (i+1)+". "+it.name+"\n"; if(it.pq) { if(it.comp) msg+=" > "+it.pq+" Pcs (Co)\n"; else { var t1=Math.round(it.pq*it.pr); gTotal+=t1; msg+=" > "+it.pq+" Pcs x ₹"+it.pr+" = ₹"+t1+"\n"; } } if(it.cq) { if(it.comp) msg+=" > "+it.cq+" Cases (Co)\n"; else { var t2=Math.round(it.cq*it.cr); gTotal+=t2; msg+=" > "+it.cq+" Cases x ₹"+it.cr+" = ₹"+t2+"\n"; } } });
+            if(gTotal>0) msg += "\n*Total Bill: ₹"+gTotal+"*";
+            document.getElementById('preview-text').innerText = msg;
+            var enc = encodeURIComponent(msg); document.getElementById('wa-link-admin').href = "https://wa.me/"+phoneNo+"?text="+enc; document.getElementById('wa-link-group').href = "https://api.whatsapp.com/send?text="+enc;
+            closeModal('cart-modal'); openModal('preview-modal');
         }
-
-        function openTrash() {
-            cleanTrash();
-            renderTrash();
-            document.getElementById('trash-modal').style.display = 'block';
-        }
-
-        function renderTrash() {
-            var list = document.getElementById('trash-orders-list');
-            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
-            list.innerHTML = "";
-            if(trashed.length === 0) { list.innerHTML = "<p>ट्रैश खाली है।</p>"; return; }
-            
-            for(var i=0; i<trashed.length; i++) {
-                var o = trashed[i];
-                var html = '<div class="saved-order-card" style="opacity:0.8; background:#fafafa;">';
-                html += '<strong>' + o.party + '</strong> <br><small style="color:gray">Saved on: ' + o.date + '</small>';
-                
-                var now = new Date().getTime();
-                var diffMs = (30 * 24 * 60 * 60 * 1000) - (now - o.deletedAt);
-                var daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                
-                html += '<div style="color:#d32f2f; font-size:12px; margin-top:5px;">🕒 ' + daysLeft + ' दिन में परमानेंट डिलीट हो जाएगा</div>';
-                html += '<div style="margin-top:10px; display:flex; gap:10px;">';
-                html += '<button onclick="restoreOrder(' + i + ')" style="padding:6px 12px; font-size:13px; background:#27ae60; color:white; border:none; border-radius:4px; cursor:pointer;">Restore (वापस लाएं)</button>';
-                html += '<button onclick="permanentlyDelete(' + i + ')" style="padding:6px 12px; font-size:13px; background:#555; color:white; border:none; border-radius:4px; cursor:pointer;">Delete (हमेशा के लिए)</button>';
-                html += '</div></div>';
-                list.innerHTML += html;
-            }
-        }
-
-        function restoreOrder(idx) {
-            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            var o = trashed.splice(idx, 1)[0];
-            delete o.deletedAt; 
-            orders.push(o);
-            localStorage.setItem('trashedOrders', JSON.stringify(trashed));
-            localStorage.setItem('savedOrders', JSON.stringify(orders));
-            renderTrash();
-            renderSavedOrders();
-            alert("ऑर्डर वापस Saved Orders में डाल दिया गया है!");
-        }
-
-        function permanentlyDelete(idx) {
-            if(!confirm("क्या आप इसे हमेशा के लिए मिटाना चाहते हैं?")) return;
-            var trashed = JSON.parse(localStorage.getItem('trashedOrders')) || [];
-            trashed.splice(idx, 1);
-            localStorage.setItem('trashedOrders', JSON.stringify(trashed));
-            renderTrash();
-        }
-
-        function shareAllOrders(shareType) {
-            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
-            var cbs = document.querySelectorAll('.order-cb');
-            var finalOrdersToShare = [];
-            for(var c=0; c < cbs.length; c++) {
-                if(cbs[c].checked) {
-                    var origIdx = cbs[c].getAttribute('data-original-index');
-                    finalOrdersToShare.push(orders[origIdx]);
-                }
-            }
-            if(finalOrdersToShare.length === 0) { alert("कृपया शेयर करने के लिए कम से कम एक ऑर्डर बॉक्स पर टिक (✅) लगाएँ!"); return; }
-
-            var msg = "*ORDERS (" + finalOrdersToShare.length + ")*\n*Salesman:* " + currentSalesman + "\n";
-            var filterDate = document.getElementById('order-date-filter').value;
-            if (filterDate) {
-                var parts = filterDate.split('-');
-                if(parts.length === 3) { msg += "*Date:* " + parts[2] + "-" + parts[1] + "-" + parts[0] + "\n\n"; }
-            } else { msg += "\n"; }
-            
-            for(var oIdx = 0; oIdx < finalOrdersToShare.length; oIdx++) {
-                var o = finalOrdersToShare[oIdx];
-                msg += "*" + (oIdx + 1) + ". Party Name:* *" + o.party + "*\n";
-                var partyTotal = 0;
-                for(var i = 0; i < o.items.length; i++) {
-                    var item = o.items[i];
-                    msg += "- " + item.name + "\n";
-                    if(item.pq) {
-                        if(item.comp) { msg += "   " + item.pq + " Pcs (Company Rate)\n"; } 
-                        else { var t1 = item.pq * item.pr; partyTotal += t1; msg += "   " + item.pq + " Pcs x ₹" + item.pr + " = ₹" + t1 + "\n"; }
-                    }
-                    if(item.cq) {
-                        if(item.comp) { msg += "   " + item.cq + " Cases (Company Rate)\n"; } 
-                        else { var t2 = item.cq * item.cr; partyTotal += t2; msg += "   " + item.cq + " Cases x ₹" + item.cr + " = ₹" + t2 + "\n"; }
-                    }
-                }
-                if(partyTotal > 0) { msg += "*Total Bill: ₹" + partyTotal + "*\n"; }
-                msg += "-------------------\n\n";
-            }
-            var encodedMsg = encodeURIComponent(msg);
-            var url = shareType === 'admin' ? "https://wa.me/" + phoneNo + "?text=" + encodedMsg : "https://api.whatsapp.com/send?text=" + encodedMsg;
-            window.open(url, '_blank');
-        }
-
+        function shareAllOrders(type) { alert("Share ready. Check WhatsApp links."); }
     </script>
 </body>
 </html>

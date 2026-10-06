@@ -18,8 +18,9 @@
         /* Sidebar */
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2001; top: 0; left: 0; background-color: #fff; overflow-x: hidden; transition: 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
         .sidebar-header { background: #b71c1c; color: white; padding: 20px; font-size: 18px; font-weight: bold; }
-        .sidebar a { padding: 15px 20px; text-decoration: none; font-size: 16px; color: #333; display: block; border-bottom: 1px solid #f0f0f0; transition: 0.2s; }
-        .sidebar a:hover { background-color: #f9f9f9; color: #d32f2f; }
+        /* CHANGED: Anchor tags to div to prevent URL Hash change bug */
+        .sidebar div.menu-item { padding: 15px 20px; font-size: 16px; color: #333; display: block; border-bottom: 1px solid #f0f0f0; transition: 0.2s; cursor: pointer; }
+        .sidebar div.menu-item:hover { background-color: #f9f9f9; color: #d32f2f; }
         .close-sidebar { position: absolute; top: 10px; right: 15px; font-size: 30px; background: none; border: none; color: white; cursor: pointer; }
         
         /* Toast Notification */
@@ -32,8 +33,6 @@
         
         /* App Layers */
         .app-layer { display: none; min-height: 100vh; background: #f0f2f5; }
-        
-        /* Centered login specific styling */
         #login-layer { align-items: center; justify-content: flex-start; background: white; }
         
         .login-box { padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; background: white; margin-top: 10px; }
@@ -95,6 +94,8 @@
         
         .dash-card-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .dash-card { background: white; padding: 15px; border-radius: 8px; text-align: center; border-top: 3px solid #d32f2f; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .dash-title { font-size: 12px; color: #777; text-transform: uppercase; }
+        .dash-value { font-size: 22px; font-weight: bold; color: #333; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -105,11 +106,12 @@
     <!-- Sidebar Menu -->
     <div id="mySidebar" class="sidebar">
         <div class="sidebar-header">मेनू (Menu)<button class="close-sidebar" onclick="closeNav()">×</button></div>
-        <a href="#" onclick="openModal('dashboard-modal'); closeNav();">📊 Dashboard (रिपोर्ट्स)</a>
-        <a href="#" onclick="openModal('saved-orders-modal'); closeNav();">💾 Saved Orders (सेव ऑर्डर्स)</a>
-        <a href="#" onclick="openModal('drafts-modal'); closeNav();">📝 Drafts (अधूरे ऑर्डर्स)</a>
-        <a href="#" onclick="openModal('trash-modal'); closeNav();">🗑️ Trash (डिलीट ऑर्डर्स)</a>
-        <a href="#" onclick="logout(); closeNav();" style="color: #c0392b; margin-top: auto; border-top: 2px solid #eee;">🚪 Logout (लॉगआउट)</a>
+        <!-- CHANGED: No href="#", prevents jumping to login page -->
+        <div class="menu-item" onclick="openModal('dashboard-modal'); closeNav();">📊 Dashboard (रिपोर्ट्स / सेल)</div>
+        <div class="menu-item" onclick="openModal('saved-orders-modal'); closeNav();">💾 Saved Orders (सेव ऑर्डर्स)</div>
+        <div class="menu-item" onclick="openModal('drafts-modal'); closeNav();">📝 Drafts (अधूरे ऑर्डर्स)</div>
+        <div class="menu-item" onclick="openModal('trash-modal'); closeNav();">🗑️ Trash (डिलीट ऑर्डर्स)</div>
+        <div class="menu-item" onclick="logout(); closeNav();" style="color: #c0392b; margin-top: auto; border-top: 2px solid #eee;">🚪 Logout (लॉगआउट)</div>
     </div>
 
     <!-- ================= LAYER 1: LOGIN ================= -->
@@ -183,7 +185,7 @@
                 </div>
                 <input type="number" id="start-party-number" placeholder="मोबाइल नंबर (ऑप्शनल)">
                 <input type="text" id="start-party-address" placeholder="पता / Station (ऑप्शनल)">
-                <button class="btn-start" onclick="startOrderProcess()" style="margin-top:15px;">Start Order 🛒</button>
+                <button class="btn-start" onclick="startOrderProcessManual()" style="margin-top:15px;">Start Order 🛒</button>
             </div>
         </div>
     </div>
@@ -251,21 +253,31 @@
     <!-- Dashboard Modal -->
     <div id="dashboard-modal" class="modal">
         <div class="modal-header">
-            <h3 style="margin:0;">Sales Dashboard</h3>
+            <h3 style="margin:0;">Sales Analysis (डैशबोर्ड)</h3>
             <button class="close-btn" onclick="goBackHistory()">✖</button>
         </div>
         <div class="modal-body">
             <h4 style="margin-top:0; color:#333;" id="dash-salesman-name">Salesman</h4>
-            <div class="filter-section" style="display:flex; gap:10px; align-items:center;">
+            
+            <!-- ALL TIME TOTAL SALES CARD -->
+            <div class="dash-card" style="background: #e8f5e9; border-top: 3px solid #27ae60; margin-bottom: 15px;">
+                <div class="dash-title">Total Sale (All Time / कुल सेल)</div>
+                <div class="dash-value" id="dash-all-time-sales" style="color:#27ae60;">0</div>
+            </div>
+
+            <div class="filter-section" style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
                 <input type="date" id="dash-date-filter" onchange="generateDashboard()" style="margin:0; padding:8px; flex:1;">
-                <button onclick="clearDashDate()" style="padding: 8px; width: auto; font-size: 13px; background: #7f8c8d; color: white;">All</button>
+                <button onclick="clearDashDate()" style="padding: 8px; width: auto; font-size: 13px; background: #7f8c8d; color: white;">Clear Date</button>
             </div>
+
+            <!-- FILTERED SALES CARDS -->
             <div class="dash-card-container">
-                <div class="dash-card"><div class="dash-title">Total Orders</div><div class="dash-value" id="dash-total-orders">0</div></div>
-                <div class="dash-card"><div class="dash-title">Total Sales (₹)</div><div class="dash-value" id="dash-total-sales" style="color:#27ae60;">0</div></div>
+                <div class="dash-card"><div class="dash-title">Orders (तारीख अनुसार)</div><div class="dash-value" id="dash-total-orders">0</div></div>
+                <div class="dash-card"><div class="dash-title">Sales (तारीख अनुसार)</div><div class="dash-value" id="dash-total-sales" style="color:#d32f2f;">0</div></div>
             </div>
-            <h4 style="color:#d32f2f; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:5px;">Sales Analysis (Items Sold)</h4>
-            <div id="dash-analysis-list"></div>
+
+            <h4 style="color:#d32f2f; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:5px;">Product Analysis (कौनसा माल बिका?)</h4>
+            <div id="dash-analysis-list" style="background:white; padding:10px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"></div>
         </div>
     </div>
 
@@ -293,7 +305,7 @@
             <button class="close-btn" onclick="goBackHistory()">✖</button>
         </div>
         <div class="modal-body">
-            <p style="color:#e67e22; font-size:13px; font-weight:bold;">ℹ️️ ऐप बंद होने से पहले भरे गए अधूरे ऑर्डर।</p>
+            <p style="color:#e67e22; font-size:13px; font-weight:bold;">ℹ ऐप बंद होने से पहले भरे गए अधूरे ऑर्डर।</p>
             <div id="drafts-list"></div>
         </div>
     </div>
@@ -330,17 +342,15 @@
         // --- 30 MIN IDLE AUTO-LOGOUT ---
         var idleTime = 0;
         function startIdleTimer() {
-            // Reset timer on any interaction
             document.addEventListener('mousemove', resetIdleTime);
             document.addEventListener('mousedown', resetIdleTime);
             document.addEventListener('touchstart', resetIdleTime);
             document.addEventListener('click', resetIdleTime);
             document.addEventListener('keypress', resetIdleTime);
             
-            // Check every 1 minute
             setInterval(function() {
                 idleTime++;
-                if (idleTime >= 30) { // 30 minutes
+                if (idleTime >= 30) { 
                     if(currentSalesman !== "") {
                         alert("सुरक्षा के कारण, 30 मिनट तक इस्तेमाल न करने पर आपको ऑटो-लॉगआउट किया जा रहा है।");
                         logout();
@@ -363,16 +373,14 @@
         }
 
         function showLayerSilent(layerId) {
-            // Hides all layers
             document.querySelectorAll('.app-layer').forEach(el => el.style.display = 'none');
             var el = document.getElementById(layerId);
-            // Default block for all to prevent side-by-side flex issue
-            el.style.display = 'block'; 
             
-            // Special centering for login layer only
+            // Fix for side empty space: Login layer is flex, others are block
             if(layerId === 'login-layer') {
                 el.style.display = 'flex';
-                el.style.flexDirection = 'column';
+            } else {
+                el.style.display = 'block';
             }
         }
 
@@ -401,7 +409,7 @@
             var today = new Date();
             document.getElementById('dash-date-filter').value = today.getFullYear() + '-' + ("0" + (today.getMonth() + 1)).slice(-2) + '-' + ("0" + today.getDate()).slice(-2);
             
-            startIdleTimer(); // Start the 30 min timer
+            startIdleTimer(); 
         };
 
         function showToast(msg) {
@@ -414,7 +422,7 @@
         function openNav() { document.getElementById("mySidebar").style.width = "250px"; }
         function closeNav() { document.getElementById("mySidebar").style.width = "0"; }
 
-        // --- AUTHENTICATION (Mobile + Pwd) ---
+        // --- AUTHENTICATION ---
         function showRegisterForm() { document.getElementById('auth-box-login').style.display='none'; document.getElementById('auth-box-register').style.display='block'; document.getElementById('auth-box-forgot').style.display='none'; }
         function showLoginForm() { document.getElementById('auth-box-login').style.display='block'; document.getElementById('auth-box-register').style.display='none'; document.getElementById('auth-box-forgot').style.display='none'; }
         function showForgotForm() { document.getElementById('auth-box-login').style.display='none'; document.getElementById('auth-box-register').style.display='none'; document.getElementById('auth-box-forgot').style.display='block'; document.getElementById('forgot-step-1').style.display='block'; document.getElementById('forgot-step-2').style.display='none'; }
@@ -439,11 +447,11 @@
             if(products.length === 0) { alert("स्टॉक लिस्ट लोड नहीं हुई है।"); return; }
             if(!m || !p) { alert("मोबाइल और पासवर्ड डालें!"); return; }
 
-            if(!usersData[m]) { alert("अकाउंट नहीं मिला। कृपया 'नया सेल्समैन' पर क्लिक करके रजिस्टर करें।"); return; }
+            if(!usersData[m]) { alert("अकाउंट नहीं मिला। कृपया रजिस्टर करें।"); return; }
             if(usersData[m].pwd !== p) { alert("गलत पासवर्ड!"); return; }
 
             currentSalesmanMobile = m; currentSalesman = usersData[m].name;
-            resetIdleTime(); // Reset security timer on login
+            resetIdleTime(); 
             
             navigateLayer('party-layer');
             generateDailyVisits(); 
@@ -469,11 +477,10 @@
 
         function logout() {
             document.getElementById('login-password').value = ""; currentSalesman = ""; currentSalesmanMobile = ""; 
-            resetIdleTime();
-            navigateLayer('login-layer');
+            resetIdleTime(); navigateLayer('login-layer');
         }
 
-        // --- NEW SMART ROUTE / VISIT GENERATOR (Daily Rotation Added) ---
+        // --- SMART ROUTE / VISIT GENERATOR ---
         function generateDailyVisits() {
             var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
             var lastVisits = {};
@@ -489,19 +496,15 @@
                     var diffTime = Math.abs(today - lastVisits[p.name]);
                     daysSince = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
-                if(daysSince >= 15) {
-                    pendingParties.push({ name: p.name, add: p.add || "Other", days: daysSince });
-                }
+                if(daysSince >= 15) { pendingParties.push({ name: p.name, add: p.add || "Other", days: daysSince }); }
             });
 
             var alertBox = document.getElementById('smart-route-box');
             if(pendingParties.length > 0) {
-                // DAILY ROTATION ALGORITHM: Uses the current day to pick a different batch of 15 parties everyday
                 var dayOfMonth = today.getDate(); 
                 var startIndex = (dayOfMonth * 15) % pendingParties.length;
                 var todayVisits = pendingParties.slice(startIndex, startIndex + 15);
                 
-                // If we reach the end of the list and need more to make it 15, circle back to the start
                 if(todayVisits.length < 15 && pendingParties.length > 15) {
                     todayVisits = todayVisits.concat(pendingParties.slice(0, 15 - todayVisits.length));
                 }
@@ -511,18 +514,30 @@
                 html += "<ul class='smart-route-list'>";
                 todayVisits.forEach(v => {
                     var dayStr = v.days === 999 ? "नया" : v.days + " दिन";
-                    html += "<li><span class='smart-party-link' onclick='selectSuggestedParty(\""+v.name.replace(/"/g, '&quot;')+"\", \""+v.add.replace(/"/g, '&quot;')+"\")'>" + v.name + "</span> <span style='color:#e67e22;'>(" + dayStr + ")</span></li>";
+                    // DIRECT ORDER CLICK FIX
+                    html += "<li><span class='smart-party-link' onclick='startDirectOrder(\""+v.name.replace(/"/g, '&quot;')+"\", \""+v.add.replace(/"/g, '&quot;')+"\")'>" + v.name + "</span> <span style='color:#e67e22;'>(" + dayStr + ")</span></li>";
                 });
                 html += "</ul>";
                 alertBox.innerHTML = html; alertBox.style.display = "block";
             } else { alertBox.style.display = "none"; }
         }
 
-        function selectSuggestedParty(pName, pAdd) {
-            document.getElementById('start-party-name').value = pName;
-            document.getElementById('start-party-address').value = pAdd;
-            document.getElementById('start-party-number').value = "";
-            alert("पार्टी सेलेक्ट हो गई! अब 'Start Order' पर क्लिक करें।");
+        // DIRECT ORDER FIX: Bypasses the Start button
+        function startDirectOrder(pName, pAdd) {
+            document.getElementById('party-name-input').value = pName;
+            document.getElementById('party-address-input').value = pAdd;
+            document.getElementById('party-number-input').value = "";
+            document.getElementById('header-salesman-name').innerHTML = currentSalesman;
+            
+            navigateLayer('main-layer');
+            renderProductsFast();
+            loadAutoDraft();
+        }
+
+        function startOrderProcessManual() {
+            var pn = document.getElementById('start-party-name').value.trim();
+            if(!pn) { alert("पार्टी का नाम डालें!"); return; }
+            startDirectOrder(pn, document.getElementById('start-party-address').value);
         }
 
         // --- FETCH DUAL CSV DATA ---
@@ -533,14 +548,11 @@
                 fetch('rates.csv?v=' + v).then(r => r.ok ? r.text() : "").catch(e => "")
             ])
             .then(data => {
-                var stockText = data[0];
-                var ratesText = data[1];
+                var stockText = data[0]; var ratesText = data[1];
                 if(stockText.toLowerCase().indexOf("<!doctype html>") !== -1) throw new Error("GitHub फाइल प्रोसेस हो रही है...");
-                
                 parseDualCSV(stockText, ratesText);
-                
                 document.getElementById('loading-msg').style.color="green"; 
-                document.getElementById('loading-msg').innerHTML="✅ डेटा सिंक पूरा हुआ (" + products.length + " आइटम) <br><span style='font-size:11px;color:gray;'>Last: " + new Date().toLocaleTimeString('en-IN') + "</span>";
+                document.getElementById('loading-msg').innerHTML="✅ डेटा सिंक पूरा हुआ (" + products.length + " आइटम)";
             }).catch(e => { 
                 document.getElementById('loading-msg').style.color="red"; 
                 document.getElementById('loading-msg').innerText="⚠️ " + e; 
@@ -559,7 +571,6 @@
                         var nameKey = cols[0] ? cols[0].replace(/^"|"$/g, '').trim().toLowerCase() : "";
                         var costVal = cols[1] ? parseFloat(cols[1].replace(/[^0-9.-]/g, '')) || 0 : 0; 
                         var mrpVal = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "";           
-                        
                         if(nameKey && nameKey !== "product" && nameKey !== "item name") {
                             ratesMap[nameKey] = { mrp: mrpVal, cost: costVal };
                         }
@@ -578,26 +589,17 @@
                     var pack = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : "1";
                     var comp = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "Company"; 
                     var stockNum = cols[3] ? parseFloat(cols[3].replace(/[^0-9.-]/g, '')) || 0 : 0; 
-                    
-                    var sRate = "0";
-                    if(cols.length > 5 && cols[5]) {
-                        sRate = cols[5].replace(/^"|"$/g, '').trim(); 
-                    }
+                    var sRate = "0"; if(cols.length > 5 && cols[5]) sRate = cols[5].replace(/^"|"$/g, '').trim(); 
 
                     if(desc && desc.toLowerCase() !== "description") {
                         var lookupKey = desc.toLowerCase();
                         var finalMrp = ratesMap[lookupKey] ? ratesMap[lookupKey].mrp : "";
                         var finalCost = ratesMap[lookupKey] ? ratesMap[lookupKey].cost : 0;
-
-                        products.push({ 
-                            name: desc, pack: pack, company: comp, 
-                            mrp: finalMrp, saleRate: sRate, cost: finalCost, currentStock: stockNum 
-                        });
+                        products.push({ name: desc, pack: pack, company: comp, mrp: finalMrp, saleRate: sRate, cost: finalCost, currentStock: stockNum });
                         companiesSet[comp] = true;
                     }
                 }
             }
-            populateCompanyDropdown(companiesSet);
         }
 
         // --- PARTIES PARSING ---
@@ -639,20 +641,6 @@
         }
 
         function goToPartyLayer() { navigateLayer('party-layer'); }
-        
-        function startOrderProcess() {
-            var pn = document.getElementById('start-party-name').value.trim();
-            if(!pn) { alert("पार्टी का नाम डालें!"); return; }
-            
-            document.getElementById('party-name-input').value = pn;
-            document.getElementById('party-number-input').value = document.getElementById('start-party-number').value;
-            document.getElementById('party-address-input').value = document.getElementById('start-party-address').value;
-            document.getElementById('header-salesman-name').innerHTML = currentSalesman;
-            
-            navigateLayer('main-layer');
-            renderProductsFast();
-            loadAutoDraft();
-        }
 
         // --- OLD RATE & PRODUCT RENDERING ---
         function getOldRatesForParty(partyName) {
@@ -809,24 +797,13 @@
                 var fItems = ""; var gTotal = 0; var totalCost = 0;
                 for(var i=0; i<newOrder.items.length; i++) {
                     var it = newOrder.items[i]; fItems += (i+1)+". "+it.name+"\n";
-                    
-                    var pcs = parseFloat(it.pq) || 0;
-                    var cases = parseFloat(it.cq) || 0;
-                    var packSize = parseInt(it.pack) || 1;
-                    
-                    var itemCost = (pcs + (cases * packSize)) * (parseFloat(it.cost) || 0);
-                    totalCost += itemCost;
-                    var itemSaleTotal = 0;
+                    var pcs = parseFloat(it.pq) || 0; var cases = parseFloat(it.cq) || 0; var packSize = parseInt(it.pack) || 1;
+                    var itemCost = (pcs + (cases * packSize)) * (parseFloat(it.cost) || 0); totalCost += itemCost; var itemSaleTotal = 0;
 
                     if(it.pq) { if(it.comp) fItems += " > "+it.pq+" Pcs (Co. Rate)\n"; else { var t1 = Math.round(pcs*it.pr); itemSaleTotal+=t1; fItems += " > "+it.pq+" Pcs x ₹"+it.pr+" = ₹"+t1+"\n"; } }
                     if(it.cq) { if(it.comp) fItems += " > "+it.cq+" Cases (Co. Rate)\n"; else { var t2 = Math.round(cases*it.cr); itemSaleTotal+=t2; fItems += " > "+it.cq+" Cases x ₹"+it.cr+" = ₹"+t2+"\n"; } }
-                    
                     gTotal += itemSaleTotal;
-                    
-                    if(!it.comp) {
-                        var itemProfit = itemSaleTotal - itemCost;
-                        fItems += "   [Cost: ₹"+Math.round(itemCost)+" | Profit: ₹"+Math.round(itemProfit)+"]\n";
-                    }
+                    if(!it.comp) { var itemProfit = itemSaleTotal - itemCost; fItems += "   [Cost: ₹"+Math.round(itemCost)+" | Profit: ₹"+Math.round(itemProfit)+"]\n"; }
                 }
                 if(gTotal>0) fItems += "\n=> Total Bill: ₹" + gTotal;
                 var grossProfit = Math.round(gTotal - totalCost);
@@ -851,27 +828,48 @@
         }
         function clearCartWithConfirmation() { if(confirm("डिलीट करें?")) { localStorage.removeItem('autoDraft_' + currentSalesmanMobile); closeAllModals(); resetFormSilent(); window.scrollTo(0,0); } }
 
-        // --- DASHBOARD ---
+        // --- DASHBOARD WITH ALL TIME SALES ---
         function generateDashboard() {
-            var fDate = document.getElementById('dash-date-filter').value; var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
+            var fDate = document.getElementById('dash-date-filter').value; 
+            var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
             document.getElementById('dash-salesman-name').innerText = "👨‍💼 Salesman: " + currentSalesman;
+            
             var tOrders = 0; var tSales = 0; var itemMap = {};
+            var allTimeSales = 0;
+
             for(var k=0; k<orders.length; k++) {
                 var o = orders[k];
-                if(o.salesman === currentSalesman && (!fDate || o.dateValue === fDate)) {
-                    tOrders++;
+                if(o.salesman === currentSalesman) {
+                    // ALL TIME CALCULATION
+                    var oTotal = 0;
                     for(var i=0; i<o.items.length; i++) {
-                        var it = o.items[i]; var iTotal = 0; var pcs = parseFloat(it.pq)||0; var cs = parseFloat(it.cq)||0;
-                        if(!it.comp) iTotal = Math.round(pcs*(parseFloat(it.pr)||0)) + Math.round(cs*(parseFloat(it.cr)||0));
-                        tSales += iTotal;
-                        if(!itemMap[it.name]) itemMap[it.name] = { pcs: 0, cases: 0, val: 0 };
-                        itemMap[it.name].pcs += pcs; itemMap[it.name].cases += cs; itemMap[it.name].val += iTotal;
+                        var it = o.items[i]; var pcs = parseFloat(it.pq)||0; var cs = parseFloat(it.cq)||0;
+                        if(!it.comp) oTotal += Math.round(pcs*(parseFloat(it.pr)||0)) + Math.round(cs*(parseFloat(it.cr)||0));
+                    }
+                    allTimeSales += oTotal;
+
+                    // FILTERED DATE CALCULATION
+                    if(!fDate || o.dateValue === fDate) {
+                        tOrders++;
+                        tSales += oTotal;
+                        for(var i=0; i<o.items.length; i++) {
+                            var it = o.items[i]; var pcs = parseFloat(it.pq)||0; var cs = parseFloat(it.cq)||0;
+                            var iTotal = 0;
+                            if(!it.comp) iTotal = Math.round(pcs*(parseFloat(it.pr)||0)) + Math.round(cs*(parseFloat(it.cr)||0));
+                            
+                            if(!itemMap[it.name]) itemMap[it.name] = { pcs: 0, cases: 0, val: 0 };
+                            itemMap[it.name].pcs += pcs; itemMap[it.name].cases += cs; itemMap[it.name].val += iTotal;
+                        }
                     }
                 }
             }
-            document.getElementById('dash-total-orders').innerText = tOrders; document.getElementById('dash-total-sales').innerText = "₹" + tSales.toLocaleString('en-IN');
+            
+            document.getElementById('dash-all-time-sales').innerText = "₹" + allTimeSales.toLocaleString('en-IN');
+            document.getElementById('dash-total-orders').innerText = tOrders; 
+            document.getElementById('dash-total-sales').innerText = "₹" + tSales.toLocaleString('en-IN');
+            
             var aList = document.getElementById('dash-analysis-list'); aList.innerHTML = ""; var keys = Object.keys(itemMap);
-            if(keys.length === 0) aList.innerHTML = "<div style='color:gray;font-size:13px;text-align:center;'>कोई डेटा नहीं।</div>";
+            if(keys.length === 0) aList.innerHTML = "<div style='color:gray;font-size:13px;text-align:center;'>इस तारीख का कोई डेटा नहीं है।</div>";
             else {
                 keys.sort((a,b) => itemMap[b].val - itemMap[a].val);
                 for(var j=0; j<keys.length; j++) {

@@ -30,16 +30,18 @@
 
         .container { padding: 10px; padding-bottom: 80px; }
         
-        /* App Layers (For Back Button History) */
+        /* App Layers */
         .app-layer { display: none; min-height: 100vh; background: #f0f2f5; }
-        #login-layer { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background: white; }
+        
+        /* Centered login specific styling */
+        #login-layer { align-items: center; justify-content: flex-start; background: white; }
         
         .login-box { padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; background: white; margin-top: 10px; }
         select, input[type="text"], input[type="number"], input[type="date"], input[type="password"] { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size:14px; }
         button { border: none; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; padding: 12px; }
         .link-btn { background: none; border: none; color: #1976d2; font-size: 13px; font-weight: normal; margin-top: 10px; padding: 5px; cursor: pointer; text-decoration: underline; }
 
-        /* SMART ROUTE BOX (YELLOW) */
+        /* SMART ROUTE BOX */
         .smart-route-box { background-color: #fff9c4; border: 2px solid #fbc02d; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none; }
         .smart-route-box h4 { margin: 0 0 5px 0; color: #d35400; font-size: 16px; display: flex; align-items: center; gap: 5px; }
         .smart-route-list { margin: 0; padding-left: 20px; font-size: 13px; color: #333; max-height: 180px; overflow-y: auto; }
@@ -151,7 +153,7 @@
                 <button class="btn-start" onclick="sendOTP()" style="background:#e67e22; margin-top: 10px;">Send OTP</button>
             </div>
             <div id="forgot-step-2" style="display:none;">
-                <p style="font-size:12px; color:green;">OTP आपके नंबर पर भेज दिया गया है (पॉप-अप चेक करें)</p>
+                <p style="font-size:12px; color:green;">OTP आपके नंबर पर भेज दिया गया है</p>
                 <input type="number" id="forgot-otp" placeholder="Enter OTP">
                 <input type="password" id="forgot-new-pwd" placeholder="🔒 नया पासवर्ड बनाएं">
                 <button class="btn-start" onclick="verifyOTPAndReset()" style="background:#27ae60; margin-top: 10px;">Reset Password</button>
@@ -291,7 +293,7 @@
             <button class="close-btn" onclick="goBackHistory()">✖</button>
         </div>
         <div class="modal-body">
-            <p style="color:#e67e22; font-size:13px; font-weight:bold;">ℹ️ ऐप बंद होने से पहले भरे गए अधूरे ऑर्डर।</p>
+            <p style="color:#e67e22; font-size:13px; font-weight:bold;">ℹ️️ ऐप बंद होने से पहले भरे गए अधूरे ऑर्डर।</p>
             <div id="drafts-list"></div>
         </div>
     </div>
@@ -324,6 +326,29 @@
         var phoneNo = "917219929217";
         var isDraftLoading = false;
         var generatedOTP = "";
+        
+        // --- 30 MIN IDLE AUTO-LOGOUT ---
+        var idleTime = 0;
+        function startIdleTimer() {
+            // Reset timer on any interaction
+            document.addEventListener('mousemove', resetIdleTime);
+            document.addEventListener('mousedown', resetIdleTime);
+            document.addEventListener('touchstart', resetIdleTime);
+            document.addEventListener('click', resetIdleTime);
+            document.addEventListener('keypress', resetIdleTime);
+            
+            // Check every 1 minute
+            setInterval(function() {
+                idleTime++;
+                if (idleTime >= 30) { // 30 minutes
+                    if(currentSalesman !== "") {
+                        alert("सुरक्षा के कारण, 30 मिनट तक इस्तेमाल न करने पर आपको ऑटो-लॉगआउट किया जा रहा है।");
+                        logout();
+                    }
+                }
+            }, 60000); 
+        }
+        function resetIdleTime() { idleTime = 0; }
 
         // --- BACK BUTTON (HISTORY API) LOGIC ---
         window.addEventListener('popstate', function(event) {
@@ -338,8 +363,17 @@
         }
 
         function showLayerSilent(layerId) {
+            // Hides all layers
             document.querySelectorAll('.app-layer').forEach(el => el.style.display = 'none');
-            document.getElementById(layerId).style.display = (layerId === 'main-layer') ? 'block' : 'flex';
+            var el = document.getElementById(layerId);
+            // Default block for all to prevent side-by-side flex issue
+            el.style.display = 'block'; 
+            
+            // Special centering for login layer only
+            if(layerId === 'login-layer') {
+                el.style.display = 'flex';
+                el.style.flexDirection = 'column';
+            }
         }
 
         function openModal(modalId) {
@@ -361,11 +395,13 @@
             history.replaceState({layer: 'login-layer'}, '', '#login');
             showLayerSilent('login-layer');
             cleanTrash(); 
-            fetchDualCSVData(); // Fetching 2 CSV files
+            fetchDualCSVData(); 
             fetchPartiesData();
             
             var today = new Date();
             document.getElementById('dash-date-filter').value = today.getFullYear() + '-' + ("0" + (today.getMonth() + 1)).slice(-2) + '-' + ("0" + today.getDate()).slice(-2);
+            
+            startIdleTimer(); // Start the 30 min timer
         };
 
         function showToast(msg) {
@@ -407,6 +443,7 @@
             if(usersData[m].pwd !== p) { alert("गलत पासवर्ड!"); return; }
 
             currentSalesmanMobile = m; currentSalesman = usersData[m].name;
+            resetIdleTime(); // Reset security timer on login
             
             navigateLayer('party-layer');
             generateDailyVisits(); 
@@ -431,10 +468,12 @@
         }
 
         function logout() {
-            document.getElementById('login-password').value = ""; currentSalesman = ""; currentSalesmanMobile = ""; navigateLayer('login-layer');
+            document.getElementById('login-password').value = ""; currentSalesman = ""; currentSalesmanMobile = ""; 
+            resetIdleTime();
+            navigateLayer('login-layer');
         }
 
-        // --- NEW SMART ROUTE / VISIT GENERATOR ---
+        // --- NEW SMART ROUTE / VISIT GENERATOR (Daily Rotation Added) ---
         function generateDailyVisits() {
             var orders = JSON.parse(localStorage.getItem('savedOrders')) || [];
             var lastVisits = {};
@@ -443,8 +482,7 @@
                 if(!lastVisits[o.party] || orderDate > lastVisits[o.party]) { lastVisits[o.party] = orderDate; }
             });
 
-            var today = new Date(); var pendingParties = []; var stationCounts = {};
-
+            var today = new Date(); var pendingParties = []; 
             partiesData.forEach(p => {
                 var daysSince = 999;
                 if(lastVisits[p.name]) {
@@ -452,26 +490,24 @@
                     daysSince = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
                 if(daysSince >= 15) {
-                    var st = p.add || "Other";
-                    pendingParties.push({ name: p.name, add: st, days: daysSince });
-                    stationCounts[st] = (stationCounts[st] || 0) + 1;
+                    pendingParties.push({ name: p.name, add: p.add || "Other", days: daysSince });
                 }
             });
 
-            var bestStation = ""; var maxCount = 0;
-            for(var st in stationCounts) { if(stationCounts[st] > maxCount && st !== "Other") { maxCount = stationCounts[st]; bestStation = st; } }
-            if(!bestStation && stationCounts["Other"]) bestStation = "Other";
-
-            var todayVisits = pendingParties.filter(p => p.add === bestStation).slice(0, 15);
-            if(todayVisits.length < 15) {
-                var others = pendingParties.filter(p => p.add !== bestStation).slice(0, 15 - todayVisits.length);
-                todayVisits = todayVisits.concat(others);
-            }
-
             var alertBox = document.getElementById('smart-route-box');
-            if(todayVisits.length > 0) {
-                var html = "<h4>📍 आज का टारगेट (Smart Route)</h4>";
-                html += "<p style='font-size:12px; color:#555; margin:0 0 10px 0;'>रूट: <b>" + bestStation + "</b> (15 दिन+ से आर्डर नहीं)</p>";
+            if(pendingParties.length > 0) {
+                // DAILY ROTATION ALGORITHM: Uses the current day to pick a different batch of 15 parties everyday
+                var dayOfMonth = today.getDate(); 
+                var startIndex = (dayOfMonth * 15) % pendingParties.length;
+                var todayVisits = pendingParties.slice(startIndex, startIndex + 15);
+                
+                // If we reach the end of the list and need more to make it 15, circle back to the start
+                if(todayVisits.length < 15 && pendingParties.length > 15) {
+                    todayVisits = todayVisits.concat(pendingParties.slice(0, 15 - todayVisits.length));
+                }
+
+                var html = "<h4>📍 आज का टारगेट (डेली रूटीन)</h4>";
+                html += "<p style='font-size:12px; color:#555; margin:0 0 10px 0;'>ऑटो-रोटेटिंग पार्टी लिस्ट (15 दिन+ से पेंडिंग)</p>";
                 html += "<ul class='smart-route-list'>";
                 todayVisits.forEach(v => {
                     var dayStr = v.days === 999 ? "नया" : v.days + " दिन";
@@ -489,7 +525,7 @@
             alert("पार्टी सेलेक्ट हो गई! अब 'Start Order' पर क्लिक करें।");
         }
 
-        // --- FETCH DUAL CSV DATA (stock.csv + rates.csv) EXACTLY AS PER IMAGES ---
+        // --- FETCH DUAL CSV DATA ---
         function fetchDualCSVData() {
             var v = new Date().getTime();
             Promise.all([
@@ -512,7 +548,6 @@
         }
 
         function parseDualCSV(stockText, ratesText) {
-            // 1. Build Map from rates.csv (Image 2: Col A=Name, Col B=Cost, Col C=MRP)
             var ratesMap = {};
             if(ratesText && ratesText.toLowerCase().indexOf("<!doctype html>") === -1) {
                 var rLines = ratesText.split(/\r?\n/);
@@ -522,8 +557,8 @@
                     var cols = rDelim === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(rDelim);
                     if(cols.length >= 2) {
                         var nameKey = cols[0] ? cols[0].replace(/^"|"$/g, '').trim().toLowerCase() : "";
-                        var costVal = cols[1] ? parseFloat(cols[1].replace(/[^0-9.-]/g, '')) || 0 : 0; // Col B
-                        var mrpVal = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "";           // Col C
+                        var costVal = cols[1] ? parseFloat(cols[1].replace(/[^0-9.-]/g, '')) || 0 : 0; 
+                        var mrpVal = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "";           
                         
                         if(nameKey && nameKey !== "product" && nameKey !== "item name") {
                             ratesMap[nameKey] = { mrp: mrpVal, cost: costVal };
@@ -532,22 +567,21 @@
                 }
             }
 
-            // 2. Parse stock.csv and join data (Image 1: Col A=Name, B=Pack, C=Comp, D=Stock, E=Unit, F=Sale Rate)
             var sLines = stockText.split(/\r?\n/); 
             products = []; var companiesSet = {}; 
             var sDelim = (sLines[0] || "").indexOf('\t') !== -1 ? '\t' : ',';
             for (var i = 1; i < sLines.length; i++) {
                 var line = sLines[i].trim(); if (!line) continue; 
                 var cols = sDelim === ',' ? line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) : line.split(sDelim);
-                if (cols.length >= 4) { // At least up to stock
+                if (cols.length >= 4) { 
                     var desc = cols[0] ? cols[0].replace(/^"|"$/g, '').trim() : ""; 
                     var pack = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : "1";
                     var comp = cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : "Company"; 
-                    var stockNum = cols[3] ? parseFloat(cols[3].replace(/[^0-9.-]/g, '')) || 0 : 0; // Col D
+                    var stockNum = cols[3] ? parseFloat(cols[3].replace(/[^0-9.-]/g, '')) || 0 : 0; 
                     
                     var sRate = "0";
                     if(cols.length > 5 && cols[5]) {
-                        sRate = cols[5].replace(/^"|"$/g, '').trim(); // Col F (Sale Rate)
+                        sRate = cols[5].replace(/^"|"$/g, '').trim(); 
                     }
 
                     if(desc && desc.toLowerCase() !== "description") {
@@ -780,7 +814,6 @@
                     var cases = parseFloat(it.cq) || 0;
                     var packSize = parseInt(it.pack) || 1;
                     
-                    // Cost Math
                     var itemCost = (pcs + (cases * packSize)) * (parseFloat(it.cost) || 0);
                     totalCost += itemCost;
                     var itemSaleTotal = 0;
